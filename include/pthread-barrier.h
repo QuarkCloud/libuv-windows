@@ -29,21 +29,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * libuv v1.x struct is padded according
  * to target platform
  */
-#if defined(__ANDROID__)
-# define UV_BARRIER_STRUCT_PADDING \
-  sizeof(pthread_mutex_t) + \
-  sizeof(pthread_cond_t) + \
-  sizeof(unsigned int) - \
-  sizeof(void *)
-#elif defined(__APPLE__)
-# define UV_BARRIER_STRUCT_PADDING \
-  sizeof(pthread_mutex_t) + \
-  2 * sizeof(sem_t) + \
-  2 * sizeof(unsigned int) - \
-  sizeof(void *)
-#else
-# define UV_BARRIER_STRUCT_PADDING 0
-#endif
+# define UV_BARRIER_STRUCT_PADDING sizeof(void *)
 
 typedef struct {
   pthread_mutex_t  mutex;

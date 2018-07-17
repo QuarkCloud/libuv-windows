@@ -23,27 +23,17 @@
 
 #ifndef UV_H
 #define UV_H
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifdef _WIN32
-  /* Windows - set up dll import/export decorators. */
-# if defined(BUILDING_UV_SHARED)
-    /* Building shared library. */
-#   define UV_EXTERN __declspec(dllexport)
-# elif defined(USING_UV_SHARED)
-    /* Using shared library. */
-#   define UV_EXTERN __declspec(dllimport)
-# else
-    /* Building static library. */
-#   define UV_EXTERN /* nothing */
-# endif
-#elif __GNUC__ >= 4
-# define UV_EXTERN __attribute__((visibility("default")))
+#ifdef LIBUV_EXPORTS
+#define UVAPI __declspec(dllexport)
 #else
-# define UV_EXTERN /* nothing */
+#define UVAPI __declspec(dllimport)
 #endif
+
 
 #include "uv-errno.h"
 #include "uv-version.h"
@@ -80,7 +70,6 @@ extern "C" {
   XX(EBADF, "bad file descriptor")                                            \
   XX(EBUSY, "resource busy or locked")                                        \
   XX(ECANCELED, "operation canceled")                                         \
-  XX(ECHARSET, "invalid Unicode character")                                   \
   XX(ECONNABORTED, "software caused connection abort")                        \
   XX(ECONNREFUSED, "connection refused")                                      \
   XX(ECONNRESET, "connection reset by peer")                                  \
@@ -125,7 +114,6 @@ extern "C" {
   XX(ESPIPE, "invalid seek")                                                  \
   XX(ESRCH, "no such process")                                                \
   XX(ETIMEDOUT, "connection timed out")                                       \
-  XX(ETXTBSY, "text file is busy")                                            \
   XX(EXDEV, "cross-device link not permitted")                                \
   XX(UNKNOWN, "unknown error")                                                \
   XX(EOF, "end of file")                                                      \
@@ -235,50 +223,50 @@ typedef enum {
 } uv_run_mode;
 
 
-UV_EXTERN unsigned int uv_version(void);
-UV_EXTERN const char* uv_version_string(void);
+UVAPI unsigned int uv_version(void);
+UVAPI const char* uv_version_string(void);
 
 typedef void* (*uv_malloc_func)(size_t size);
 typedef void* (*uv_realloc_func)(void* ptr, size_t size);
 typedef void* (*uv_calloc_func)(size_t count, size_t size);
 typedef void (*uv_free_func)(void* ptr);
 
-UV_EXTERN int uv_replace_allocator(uv_malloc_func malloc_func,
+UVAPI int uv_replace_allocator(uv_malloc_func malloc_func,
                                    uv_realloc_func realloc_func,
                                    uv_calloc_func calloc_func,
                                    uv_free_func free_func);
 
-UV_EXTERN uv_loop_t* uv_default_loop(void);
-UV_EXTERN int uv_loop_init(uv_loop_t* loop);
-UV_EXTERN int uv_loop_close(uv_loop_t* loop);
+UVAPI uv_loop_t* uv_default_loop(void);
+UVAPI int uv_loop_init(uv_loop_t* loop);
+UVAPI int uv_loop_close(uv_loop_t* loop);
 /*
  * NOTE:
  *  This function is DEPRECATED (to be removed after 0.12), users should
  *  allocate the loop manually and use uv_loop_init instead.
  */
-UV_EXTERN uv_loop_t* uv_loop_new(void);
+UVAPI uv_loop_t* uv_loop_new(void);
 /*
  * NOTE:
  *  This function is DEPRECATED (to be removed after 0.12). Users should use
  *  uv_loop_close and free the memory manually instead.
  */
-UV_EXTERN void uv_loop_delete(uv_loop_t*);
-UV_EXTERN size_t uv_loop_size(void);
-UV_EXTERN int uv_loop_alive(const uv_loop_t* loop);
-UV_EXTERN int uv_loop_configure(uv_loop_t* loop, uv_loop_option option, ...);
+UVAPI void uv_loop_delete(uv_loop_t*);
+UVAPI size_t uv_loop_size(void);
+UVAPI int uv_loop_alive(const uv_loop_t* loop);
+UVAPI int uv_loop_configure(uv_loop_t* loop, uv_loop_option option, ...);
 
-UV_EXTERN int uv_run(uv_loop_t*, uv_run_mode mode);
-UV_EXTERN void uv_stop(uv_loop_t*);
+UVAPI int uv_run(uv_loop_t*, uv_run_mode mode);
+UVAPI void uv_stop(uv_loop_t*);
 
-UV_EXTERN void uv_ref(uv_handle_t*);
-UV_EXTERN void uv_unref(uv_handle_t*);
-UV_EXTERN int uv_has_ref(const uv_handle_t*);
+UVAPI void uv_ref(uv_handle_t*);
+UVAPI void uv_unref(uv_handle_t*);
+UVAPI int uv_has_ref(const uv_handle_t*);
 
-UV_EXTERN void uv_update_time(uv_loop_t*);
-UV_EXTERN uint64_t uv_now(const uv_loop_t*);
+UVAPI void uv_update_time(uv_loop_t*);
+UVAPI uint64_t uv_now(const uv_loop_t*);
 
-UV_EXTERN int uv_backend_fd(const uv_loop_t*);
-UV_EXTERN int uv_backend_timeout(const uv_loop_t*);
+UVAPI int uv_backend_fd(const uv_loop_t*);
+UVAPI int uv_backend_timeout(const uv_loop_t*);
 
 typedef void (*uv_alloc_cb)(uv_handle_t* handle,
                             size_t suggested_size,
@@ -355,10 +343,10 @@ typedef enum {
 } uv_membership;
 
 
-UV_EXTERN int uv_translate_sys_error(int sys_errno);
+UVAPI int uv_translate_sys_error(int sys_errno);
 
-UV_EXTERN const char* uv_strerror(int err);
-UV_EXTERN const char* uv_err_name(int err);
+UVAPI const char* uv_strerror(int err);
+UVAPI const char* uv_err_name(int err);
 
 
 #define UV_REQ_FIELDS                                                         \
@@ -381,7 +369,7 @@ struct uv_req_s {
 UV_PRIVATE_REQ_TYPES
 
 
-UV_EXTERN int uv_shutdown(uv_shutdown_t* req,
+UVAPI int uv_shutdown(uv_shutdown_t* req,
                           uv_stream_t* handle,
                           uv_shutdown_cb cb);
 
@@ -413,25 +401,25 @@ struct uv_handle_s {
   UV_HANDLE_FIELDS
 };
 
-UV_EXTERN size_t uv_handle_size(uv_handle_type type);
-UV_EXTERN size_t uv_req_size(uv_req_type type);
+UVAPI size_t uv_handle_size(uv_handle_type type);
+UVAPI size_t uv_req_size(uv_req_type type);
 
-UV_EXTERN int uv_is_active(const uv_handle_t* handle);
+UVAPI int uv_is_active(const uv_handle_t* handle);
 
-UV_EXTERN void uv_walk(uv_loop_t* loop, uv_walk_cb walk_cb, void* arg);
+UVAPI void uv_walk(uv_loop_t* loop, uv_walk_cb walk_cb, void* arg);
 
 /* Helpers for ad hoc debugging, no API/ABI stability guaranteed. */
-UV_EXTERN void uv_print_all_handles(uv_loop_t* loop, FILE* stream);
-UV_EXTERN void uv_print_active_handles(uv_loop_t* loop, FILE* stream);
+UVAPI void uv_print_all_handles(uv_loop_t* loop, FILE* stream);
+UVAPI void uv_print_active_handles(uv_loop_t* loop, FILE* stream);
 
-UV_EXTERN void uv_close(uv_handle_t* handle, uv_close_cb close_cb);
+UVAPI void uv_close(uv_handle_t* handle, uv_close_cb close_cb);
 
-UV_EXTERN int uv_send_buffer_size(uv_handle_t* handle, int* value);
-UV_EXTERN int uv_recv_buffer_size(uv_handle_t* handle, int* value);
+UVAPI int uv_send_buffer_size(uv_handle_t* handle, int* value);
+UVAPI int uv_recv_buffer_size(uv_handle_t* handle, int* value);
 
-UV_EXTERN int uv_fileno(const uv_handle_t* handle, uv_os_fd_t* fd);
+UVAPI int uv_fileno(const uv_handle_t* handle, uv_os_fd_t* fd);
 
-UV_EXTERN uv_buf_t uv_buf_init(char* base, unsigned int len);
+UVAPI uv_buf_t uv_buf_init(char* base, unsigned int len);
 
 
 #define UV_STREAM_FIELDS                                                      \
@@ -454,26 +442,26 @@ struct uv_stream_s {
   UV_STREAM_FIELDS
 };
 
-UV_EXTERN int uv_listen(uv_stream_t* stream, int backlog, uv_connection_cb cb);
-UV_EXTERN int uv_accept(uv_stream_t* server, uv_stream_t* client);
+UVAPI int uv_listen(uv_stream_t* stream, int backlog, uv_connection_cb cb);
+UVAPI int uv_accept(uv_stream_t* server, uv_stream_t* client);
 
-UV_EXTERN int uv_read_start(uv_stream_t*,
+UVAPI int uv_read_start(uv_stream_t*,
                             uv_alloc_cb alloc_cb,
                             uv_read_cb read_cb);
-UV_EXTERN int uv_read_stop(uv_stream_t*);
+UVAPI int uv_read_stop(uv_stream_t*);
 
-UV_EXTERN int uv_write(uv_write_t* req,
+UVAPI int uv_write(uv_write_t* req,
                        uv_stream_t* handle,
                        const uv_buf_t bufs[],
                        unsigned int nbufs,
                        uv_write_cb cb);
-UV_EXTERN int uv_write2(uv_write_t* req,
+UVAPI int uv_write2(uv_write_t* req,
                         uv_stream_t* handle,
                         const uv_buf_t bufs[],
                         unsigned int nbufs,
                         uv_stream_t* send_handle,
                         uv_write_cb cb);
-UV_EXTERN int uv_try_write(uv_stream_t* handle,
+UVAPI int uv_try_write(uv_stream_t* handle,
                            const uv_buf_t bufs[],
                            unsigned int nbufs);
 
@@ -487,12 +475,12 @@ struct uv_write_s {
 };
 
 
-UV_EXTERN int uv_is_readable(const uv_stream_t* handle);
-UV_EXTERN int uv_is_writable(const uv_stream_t* handle);
+UVAPI int uv_is_readable(const uv_stream_t* handle);
+UVAPI int uv_is_writable(const uv_stream_t* handle);
 
-UV_EXTERN int uv_stream_set_blocking(uv_stream_t* handle, int blocking);
+UVAPI int uv_stream_set_blocking(uv_stream_t* handle, int blocking);
 
-UV_EXTERN int uv_is_closing(const uv_handle_t* handle);
+UVAPI int uv_is_closing(const uv_handle_t* handle);
 
 
 /*
@@ -506,30 +494,30 @@ struct uv_tcp_s {
   UV_TCP_PRIVATE_FIELDS
 };
 
-UV_EXTERN int uv_tcp_init(uv_loop_t*, uv_tcp_t* handle);
-UV_EXTERN int uv_tcp_init_ex(uv_loop_t*, uv_tcp_t* handle, unsigned int flags);
-UV_EXTERN int uv_tcp_open(uv_tcp_t* handle, uv_os_sock_t sock);
-UV_EXTERN int uv_tcp_nodelay(uv_tcp_t* handle, int enable);
-UV_EXTERN int uv_tcp_keepalive(uv_tcp_t* handle,
+UVAPI int uv_tcp_init(uv_loop_t*, uv_tcp_t* handle);
+UVAPI int uv_tcp_init_ex(uv_loop_t*, uv_tcp_t* handle, unsigned int flags);
+UVAPI int uv_tcp_open(uv_tcp_t* handle, uv_os_sock_t sock);
+UVAPI int uv_tcp_nodelay(uv_tcp_t* handle, int enable);
+UVAPI int uv_tcp_keepalive(uv_tcp_t* handle,
                                int enable,
                                unsigned int delay);
-UV_EXTERN int uv_tcp_simultaneous_accepts(uv_tcp_t* handle, int enable);
+UVAPI int uv_tcp_simultaneous_accepts(uv_tcp_t* handle, int enable);
 
 enum uv_tcp_flags {
   /* Used with uv_tcp_bind, when an IPv6 address is used. */
   UV_TCP_IPV6ONLY = 1
 };
 
-UV_EXTERN int uv_tcp_bind(uv_tcp_t* handle,
+UVAPI int uv_tcp_bind(uv_tcp_t* handle,
                           const struct sockaddr* addr,
                           unsigned int flags);
-UV_EXTERN int uv_tcp_getsockname(const uv_tcp_t* handle,
+UVAPI int uv_tcp_getsockname(const uv_tcp_t* handle,
                                  struct sockaddr* name,
                                  int* namelen);
-UV_EXTERN int uv_tcp_getpeername(const uv_tcp_t* handle,
+UVAPI int uv_tcp_getpeername(const uv_tcp_t* handle,
                                  struct sockaddr* name,
                                  int* namelen);
-UV_EXTERN int uv_tcp_connect(uv_connect_t* req,
+UVAPI int uv_tcp_connect(uv_connect_t* req,
                              uv_tcp_t* handle,
                              const struct sockaddr* addr,
                              uv_connect_cb cb);
@@ -597,40 +585,40 @@ struct uv_udp_send_s {
   UV_UDP_SEND_PRIVATE_FIELDS
 };
 
-UV_EXTERN int uv_udp_init(uv_loop_t*, uv_udp_t* handle);
-UV_EXTERN int uv_udp_init_ex(uv_loop_t*, uv_udp_t* handle, unsigned int flags);
-UV_EXTERN int uv_udp_open(uv_udp_t* handle, uv_os_sock_t sock);
-UV_EXTERN int uv_udp_bind(uv_udp_t* handle,
+UVAPI int uv_udp_init(uv_loop_t*, uv_udp_t* handle);
+UVAPI int uv_udp_init_ex(uv_loop_t*, uv_udp_t* handle, unsigned int flags);
+UVAPI int uv_udp_open(uv_udp_t* handle, uv_os_sock_t sock);
+UVAPI int uv_udp_bind(uv_udp_t* handle,
                           const struct sockaddr* addr,
                           unsigned int flags);
 
-UV_EXTERN int uv_udp_getsockname(const uv_udp_t* handle,
+UVAPI int uv_udp_getsockname(const uv_udp_t* handle,
                                  struct sockaddr* name,
                                  int* namelen);
-UV_EXTERN int uv_udp_set_membership(uv_udp_t* handle,
+UVAPI int uv_udp_set_membership(uv_udp_t* handle,
                                     const char* multicast_addr,
                                     const char* interface_addr,
                                     uv_membership membership);
-UV_EXTERN int uv_udp_set_multicast_loop(uv_udp_t* handle, int on);
-UV_EXTERN int uv_udp_set_multicast_ttl(uv_udp_t* handle, int ttl);
-UV_EXTERN int uv_udp_set_multicast_interface(uv_udp_t* handle,
+UVAPI int uv_udp_set_multicast_loop(uv_udp_t* handle, int on);
+UVAPI int uv_udp_set_multicast_ttl(uv_udp_t* handle, int ttl);
+UVAPI int uv_udp_set_multicast_interface(uv_udp_t* handle,
                                              const char* interface_addr);
-UV_EXTERN int uv_udp_set_broadcast(uv_udp_t* handle, int on);
-UV_EXTERN int uv_udp_set_ttl(uv_udp_t* handle, int ttl);
-UV_EXTERN int uv_udp_send(uv_udp_send_t* req,
+UVAPI int uv_udp_set_broadcast(uv_udp_t* handle, int on);
+UVAPI int uv_udp_set_ttl(uv_udp_t* handle, int ttl);
+UVAPI int uv_udp_send(uv_udp_send_t* req,
                           uv_udp_t* handle,
                           const uv_buf_t bufs[],
                           unsigned int nbufs,
                           const struct sockaddr* addr,
                           uv_udp_send_cb send_cb);
-UV_EXTERN int uv_udp_try_send(uv_udp_t* handle,
+UVAPI int uv_udp_try_send(uv_udp_t* handle,
                               const uv_buf_t bufs[],
                               unsigned int nbufs,
                               const struct sockaddr* addr);
-UV_EXTERN int uv_udp_recv_start(uv_udp_t* handle,
+UVAPI int uv_udp_recv_start(uv_udp_t* handle,
                                 uv_alloc_cb alloc_cb,
                                 uv_udp_recv_cb recv_cb);
-UV_EXTERN int uv_udp_recv_stop(uv_udp_t* handle);
+UVAPI int uv_udp_recv_stop(uv_udp_t* handle);
 
 
 /*
@@ -653,10 +641,10 @@ typedef enum {
   UV_TTY_MODE_IO
 } uv_tty_mode_t;
 
-UV_EXTERN int uv_tty_init(uv_loop_t*, uv_tty_t*, uv_file fd, int readable);
-UV_EXTERN int uv_tty_set_mode(uv_tty_t*, uv_tty_mode_t mode);
-UV_EXTERN int uv_tty_reset_mode(void);
-UV_EXTERN int uv_tty_get_winsize(uv_tty_t*, int* width, int* height);
+UVAPI int uv_tty_init(uv_loop_t*, uv_tty_t*, uv_file fd, int readable);
+UVAPI int uv_tty_set_mode(uv_tty_t*, uv_tty_mode_t mode);
+UVAPI int uv_tty_reset_mode(void);
+UVAPI int uv_tty_get_winsize(uv_tty_t*, int* width, int* height);
 
 #ifdef __cplusplus
 extern "C++" {
@@ -668,7 +656,7 @@ inline int uv_tty_set_mode(uv_tty_t* handle, int mode) {
 }
 #endif
 
-UV_EXTERN uv_handle_type uv_guess_handle(uv_file file);
+UVAPI uv_handle_type uv_guess_handle(uv_file file);
 
 /*
  * uv_pipe_t is a subclass of uv_stream_t.
@@ -683,22 +671,22 @@ struct uv_pipe_s {
   UV_PIPE_PRIVATE_FIELDS
 };
 
-UV_EXTERN int uv_pipe_init(uv_loop_t*, uv_pipe_t* handle, int ipc);
-UV_EXTERN int uv_pipe_open(uv_pipe_t*, uv_file file);
-UV_EXTERN int uv_pipe_bind(uv_pipe_t* handle, const char* name);
-UV_EXTERN void uv_pipe_connect(uv_connect_t* req,
+UVAPI int uv_pipe_init(uv_loop_t*, uv_pipe_t* handle, int ipc);
+UVAPI int uv_pipe_open(uv_pipe_t*, uv_file file);
+UVAPI int uv_pipe_bind(uv_pipe_t* handle, const char* name);
+UVAPI void uv_pipe_connect(uv_connect_t* req,
                                uv_pipe_t* handle,
                                const char* name,
                                uv_connect_cb cb);
-UV_EXTERN int uv_pipe_getsockname(const uv_pipe_t* handle,
+UVAPI int uv_pipe_getsockname(const uv_pipe_t* handle,
                                   char* buffer,
                                   size_t* size);
-UV_EXTERN int uv_pipe_getpeername(const uv_pipe_t* handle,
+UVAPI int uv_pipe_getpeername(const uv_pipe_t* handle,
                                   char* buffer,
                                   size_t* size);
-UV_EXTERN void uv_pipe_pending_instances(uv_pipe_t* handle, int count);
-UV_EXTERN int uv_pipe_pending_count(uv_pipe_t* handle);
-UV_EXTERN uv_handle_type uv_pipe_pending_type(uv_pipe_t* handle);
+UVAPI void uv_pipe_pending_instances(uv_pipe_t* handle, int count);
+UVAPI int uv_pipe_pending_count(uv_pipe_t* handle);
+UVAPI uv_handle_type uv_pipe_pending_type(uv_pipe_t* handle);
 
 
 struct uv_poll_s {
@@ -713,12 +701,12 @@ enum uv_poll_event {
   UV_DISCONNECT = 4
 };
 
-UV_EXTERN int uv_poll_init(uv_loop_t* loop, uv_poll_t* handle, int fd);
-UV_EXTERN int uv_poll_init_socket(uv_loop_t* loop,
+UVAPI int uv_poll_init(uv_loop_t* loop, uv_poll_t* handle, int fd);
+UVAPI int uv_poll_init_socket(uv_loop_t* loop,
                                   uv_poll_t* handle,
                                   uv_os_sock_t socket);
-UV_EXTERN int uv_poll_start(uv_poll_t* handle, int events, uv_poll_cb cb);
-UV_EXTERN int uv_poll_stop(uv_poll_t* handle);
+UVAPI int uv_poll_start(uv_poll_t* handle, int events, uv_poll_cb cb);
+UVAPI int uv_poll_stop(uv_poll_t* handle);
 
 
 struct uv_prepare_s {
@@ -726,9 +714,9 @@ struct uv_prepare_s {
   UV_PREPARE_PRIVATE_FIELDS
 };
 
-UV_EXTERN int uv_prepare_init(uv_loop_t*, uv_prepare_t* prepare);
-UV_EXTERN int uv_prepare_start(uv_prepare_t* prepare, uv_prepare_cb cb);
-UV_EXTERN int uv_prepare_stop(uv_prepare_t* prepare);
+UVAPI int uv_prepare_init(uv_loop_t*, uv_prepare_t* prepare);
+UVAPI int uv_prepare_start(uv_prepare_t* prepare, uv_prepare_cb cb);
+UVAPI int uv_prepare_stop(uv_prepare_t* prepare);
 
 
 struct uv_check_s {
@@ -736,9 +724,9 @@ struct uv_check_s {
   UV_CHECK_PRIVATE_FIELDS
 };
 
-UV_EXTERN int uv_check_init(uv_loop_t*, uv_check_t* check);
-UV_EXTERN int uv_check_start(uv_check_t* check, uv_check_cb cb);
-UV_EXTERN int uv_check_stop(uv_check_t* check);
+UVAPI int uv_check_init(uv_loop_t*, uv_check_t* check);
+UVAPI int uv_check_start(uv_check_t* check, uv_check_cb cb);
+UVAPI int uv_check_stop(uv_check_t* check);
 
 
 struct uv_idle_s {
@@ -746,9 +734,9 @@ struct uv_idle_s {
   UV_IDLE_PRIVATE_FIELDS
 };
 
-UV_EXTERN int uv_idle_init(uv_loop_t*, uv_idle_t* idle);
-UV_EXTERN int uv_idle_start(uv_idle_t* idle, uv_idle_cb cb);
-UV_EXTERN int uv_idle_stop(uv_idle_t* idle);
+UVAPI int uv_idle_init(uv_loop_t*, uv_idle_t* idle);
+UVAPI int uv_idle_start(uv_idle_t* idle, uv_idle_cb cb);
+UVAPI int uv_idle_stop(uv_idle_t* idle);
 
 
 struct uv_async_s {
@@ -756,10 +744,10 @@ struct uv_async_s {
   UV_ASYNC_PRIVATE_FIELDS
 };
 
-UV_EXTERN int uv_async_init(uv_loop_t*,
+UVAPI int uv_async_init(uv_loop_t*,
                             uv_async_t* async,
                             uv_async_cb async_cb);
-UV_EXTERN int uv_async_send(uv_async_t* async);
+UVAPI int uv_async_send(uv_async_t* async);
 
 
 /*
@@ -772,15 +760,15 @@ struct uv_timer_s {
   UV_TIMER_PRIVATE_FIELDS
 };
 
-UV_EXTERN int uv_timer_init(uv_loop_t*, uv_timer_t* handle);
-UV_EXTERN int uv_timer_start(uv_timer_t* handle,
+UVAPI int uv_timer_init(uv_loop_t*, uv_timer_t* handle);
+UVAPI int uv_timer_start(uv_timer_t* handle,
                              uv_timer_cb cb,
                              uint64_t timeout,
                              uint64_t repeat);
-UV_EXTERN int uv_timer_stop(uv_timer_t* handle);
-UV_EXTERN int uv_timer_again(uv_timer_t* handle);
-UV_EXTERN void uv_timer_set_repeat(uv_timer_t* handle, uint64_t repeat);
-UV_EXTERN uint64_t uv_timer_get_repeat(const uv_timer_t* handle);
+UVAPI int uv_timer_stop(uv_timer_t* handle);
+UVAPI int uv_timer_again(uv_timer_t* handle);
+UVAPI void uv_timer_set_repeat(uv_timer_t* handle, uint64_t repeat);
+UVAPI uint64_t uv_timer_get_repeat(const uv_timer_t* handle);
 
 
 /*
@@ -797,13 +785,13 @@ struct uv_getaddrinfo_s {
 };
 
 
-UV_EXTERN int uv_getaddrinfo(uv_loop_t* loop,
+UVAPI int uv_getaddrinfo(uv_loop_t* loop,
                              uv_getaddrinfo_t* req,
                              uv_getaddrinfo_cb getaddrinfo_cb,
                              const char* node,
                              const char* service,
                              const struct addrinfo* hints);
-UV_EXTERN void uv_freeaddrinfo(struct addrinfo* ai);
+UVAPI void uv_freeaddrinfo(struct addrinfo* ai);
 
 
 /*
@@ -819,7 +807,7 @@ struct uv_getnameinfo_s {
   UV_GETNAMEINFO_PRIVATE_FIELDS
 };
 
-UV_EXTERN int uv_getnameinfo(uv_loop_t* loop,
+UVAPI int uv_getnameinfo(uv_loop_t* loop,
                              uv_getnameinfo_t* req,
                              uv_getnameinfo_cb getnameinfo_cb,
                              const struct sockaddr* addr,
@@ -944,11 +932,11 @@ struct uv_process_s {
   UV_PROCESS_PRIVATE_FIELDS
 };
 
-UV_EXTERN int uv_spawn(uv_loop_t* loop,
+UVAPI int uv_spawn(uv_loop_t* loop,
                        uv_process_t* handle,
                        const uv_process_options_t* options);
-UV_EXTERN int uv_process_kill(uv_process_t*, int signum);
-UV_EXTERN int uv_kill(int pid, int signum);
+UVAPI int uv_process_kill(uv_process_t*, int signum);
+UVAPI int uv_kill(int pid, int signum);
 
 
 /*
@@ -962,12 +950,12 @@ struct uv_work_s {
   UV_WORK_PRIVATE_FIELDS
 };
 
-UV_EXTERN int uv_queue_work(uv_loop_t* loop,
+UVAPI int uv_queue_work(uv_loop_t* loop,
                             uv_work_t* req,
                             uv_work_cb work_cb,
                             uv_after_work_cb after_work_cb);
 
-UV_EXTERN int uv_cancel(uv_req_t* req);
+UVAPI int uv_cancel(uv_req_t* req);
 
 
 struct uv_cpu_info_s {
@@ -1020,11 +1008,11 @@ struct uv_dirent_s {
   uv_dirent_type_t type;
 };
 
-UV_EXTERN char** uv_setup_args(int argc, char** argv);
-UV_EXTERN int uv_get_process_title(char* buffer, size_t size);
-UV_EXTERN int uv_set_process_title(const char* title);
-UV_EXTERN int uv_resident_set_memory(size_t* rss);
-UV_EXTERN int uv_uptime(double* uptime);
+UVAPI char** uv_setup_args(int argc, char** argv);
+UVAPI int uv_get_process_title(char* buffer, size_t size);
+UVAPI int uv_set_process_title(const char* title);
+UVAPI int uv_resident_set_memory(size_t* rss);
+UVAPI int uv_uptime(double* uptime);
 
 typedef struct {
   long tv_sec;
@@ -1050,19 +1038,19 @@ typedef struct {
    uint64_t ru_nivcsw;    /* involuntary context switches */
 } uv_rusage_t;
 
-UV_EXTERN int uv_getrusage(uv_rusage_t* rusage);
+UVAPI int uv_getrusage(uv_rusage_t* rusage);
 
-UV_EXTERN int uv_os_homedir(char* buffer, size_t* size);
-UV_EXTERN int uv_os_tmpdir(char* buffer, size_t* size);
-UV_EXTERN int uv_os_get_passwd(uv_passwd_t* pwd);
-UV_EXTERN void uv_os_free_passwd(uv_passwd_t* pwd);
+UVAPI int uv_os_homedir(char* buffer, size_t* size);
+UVAPI int uv_os_tmpdir(char* buffer, size_t* size);
+UVAPI int uv_os_get_passwd(uv_passwd_t* pwd);
+UVAPI void uv_os_free_passwd(uv_passwd_t* pwd);
 
-UV_EXTERN int uv_cpu_info(uv_cpu_info_t** cpu_infos, int* count);
-UV_EXTERN void uv_free_cpu_info(uv_cpu_info_t* cpu_infos, int count);
+UVAPI int uv_cpu_info(uv_cpu_info_t** cpu_infos, int* count);
+UVAPI void uv_free_cpu_info(uv_cpu_info_t* cpu_infos, int count);
 
-UV_EXTERN int uv_interface_addresses(uv_interface_address_t** addresses,
+UVAPI int uv_interface_addresses(uv_interface_address_t** addresses,
                                      int* count);
-UV_EXTERN void uv_free_interface_addresses(uv_interface_address_t* addresses,
+UVAPI void uv_free_interface_addresses(uv_interface_address_t* addresses,
                                            int count);
 
 
@@ -1112,115 +1100,115 @@ struct uv_fs_s {
   UV_FS_PRIVATE_FIELDS
 };
 
-UV_EXTERN void uv_fs_req_cleanup(uv_fs_t* req);
-UV_EXTERN int uv_fs_close(uv_loop_t* loop,
+UVAPI void uv_fs_req_cleanup(uv_fs_t* req);
+UVAPI int uv_fs_close(uv_loop_t* loop,
                           uv_fs_t* req,
                           uv_file file,
                           uv_fs_cb cb);
-UV_EXTERN int uv_fs_open(uv_loop_t* loop,
+UVAPI int uv_fs_open(uv_loop_t* loop,
                          uv_fs_t* req,
                          const char* path,
                          int flags,
                          int mode,
                          uv_fs_cb cb);
-UV_EXTERN int uv_fs_read(uv_loop_t* loop,
+UVAPI int uv_fs_read(uv_loop_t* loop,
                          uv_fs_t* req,
                          uv_file file,
                          const uv_buf_t bufs[],
                          unsigned int nbufs,
                          int64_t offset,
                          uv_fs_cb cb);
-UV_EXTERN int uv_fs_unlink(uv_loop_t* loop,
+UVAPI int uv_fs_unlink(uv_loop_t* loop,
                            uv_fs_t* req,
                            const char* path,
                            uv_fs_cb cb);
-UV_EXTERN int uv_fs_write(uv_loop_t* loop,
+UVAPI int uv_fs_write(uv_loop_t* loop,
                           uv_fs_t* req,
                           uv_file file,
                           const uv_buf_t bufs[],
                           unsigned int nbufs,
                           int64_t offset,
                           uv_fs_cb cb);
-UV_EXTERN int uv_fs_mkdir(uv_loop_t* loop,
+UVAPI int uv_fs_mkdir(uv_loop_t* loop,
                           uv_fs_t* req,
                           const char* path,
                           int mode,
                           uv_fs_cb cb);
-UV_EXTERN int uv_fs_mkdtemp(uv_loop_t* loop,
+UVAPI int uv_fs_mkdtemp(uv_loop_t* loop,
                             uv_fs_t* req,
                             const char* tpl,
                             uv_fs_cb cb);
-UV_EXTERN int uv_fs_rmdir(uv_loop_t* loop,
+UVAPI int uv_fs_rmdir(uv_loop_t* loop,
                           uv_fs_t* req,
                           const char* path,
                           uv_fs_cb cb);
-UV_EXTERN int uv_fs_scandir(uv_loop_t* loop,
+UVAPI int uv_fs_scandir(uv_loop_t* loop,
                             uv_fs_t* req,
                             const char* path,
                             int flags,
                             uv_fs_cb cb);
-UV_EXTERN int uv_fs_scandir_next(uv_fs_t* req,
+UVAPI int uv_fs_scandir_next(uv_fs_t* req,
                                  uv_dirent_t* ent);
-UV_EXTERN int uv_fs_stat(uv_loop_t* loop,
+UVAPI int uv_fs_stat(uv_loop_t* loop,
                          uv_fs_t* req,
                          const char* path,
                          uv_fs_cb cb);
-UV_EXTERN int uv_fs_fstat(uv_loop_t* loop,
+UVAPI int uv_fs_fstat(uv_loop_t* loop,
                           uv_fs_t* req,
                           uv_file file,
                           uv_fs_cb cb);
-UV_EXTERN int uv_fs_rename(uv_loop_t* loop,
+UVAPI int uv_fs_rename(uv_loop_t* loop,
                            uv_fs_t* req,
                            const char* path,
                            const char* new_path,
                            uv_fs_cb cb);
-UV_EXTERN int uv_fs_fsync(uv_loop_t* loop,
+UVAPI int uv_fs_fsync(uv_loop_t* loop,
                           uv_fs_t* req,
                           uv_file file,
                           uv_fs_cb cb);
-UV_EXTERN int uv_fs_fdatasync(uv_loop_t* loop,
+UVAPI int uv_fs_fdatasync(uv_loop_t* loop,
                               uv_fs_t* req,
                               uv_file file,
                               uv_fs_cb cb);
-UV_EXTERN int uv_fs_ftruncate(uv_loop_t* loop,
+UVAPI int uv_fs_ftruncate(uv_loop_t* loop,
                               uv_fs_t* req,
                               uv_file file,
                               int64_t offset,
                               uv_fs_cb cb);
-UV_EXTERN int uv_fs_sendfile(uv_loop_t* loop,
+UVAPI int uv_fs_sendfile(uv_loop_t* loop,
                              uv_fs_t* req,
                              uv_file out_fd,
                              uv_file in_fd,
                              int64_t in_offset,
                              size_t length,
                              uv_fs_cb cb);
-UV_EXTERN int uv_fs_access(uv_loop_t* loop,
+UVAPI int uv_fs_access(uv_loop_t* loop,
                            uv_fs_t* req,
                            const char* path,
                            int mode,
                            uv_fs_cb cb);
-UV_EXTERN int uv_fs_chmod(uv_loop_t* loop,
+UVAPI int uv_fs_chmod(uv_loop_t* loop,
                           uv_fs_t* req,
                           const char* path,
                           int mode,
                           uv_fs_cb cb);
-UV_EXTERN int uv_fs_utime(uv_loop_t* loop,
+UVAPI int uv_fs_utime(uv_loop_t* loop,
                           uv_fs_t* req,
                           const char* path,
                           double atime,
                           double mtime,
                           uv_fs_cb cb);
-UV_EXTERN int uv_fs_futime(uv_loop_t* loop,
+UVAPI int uv_fs_futime(uv_loop_t* loop,
                            uv_fs_t* req,
                            uv_file file,
                            double atime,
                            double mtime,
                            uv_fs_cb cb);
-UV_EXTERN int uv_fs_lstat(uv_loop_t* loop,
+UVAPI int uv_fs_lstat(uv_loop_t* loop,
                           uv_fs_t* req,
                           const char* path,
                           uv_fs_cb cb);
-UV_EXTERN int uv_fs_link(uv_loop_t* loop,
+UVAPI int uv_fs_link(uv_loop_t* loop,
                          uv_fs_t* req,
                          const char* path,
                          const char* new_path,
@@ -1238,32 +1226,32 @@ UV_EXTERN int uv_fs_link(uv_loop_t* loop,
  */
 #define UV_FS_SYMLINK_JUNCTION     0x0002
 
-UV_EXTERN int uv_fs_symlink(uv_loop_t* loop,
+UVAPI int uv_fs_symlink(uv_loop_t* loop,
                             uv_fs_t* req,
                             const char* path,
                             const char* new_path,
                             int flags,
                             uv_fs_cb cb);
-UV_EXTERN int uv_fs_readlink(uv_loop_t* loop,
+UVAPI int uv_fs_readlink(uv_loop_t* loop,
                              uv_fs_t* req,
                              const char* path,
                              uv_fs_cb cb);
-UV_EXTERN int uv_fs_realpath(uv_loop_t* loop,
+UVAPI int uv_fs_realpath(uv_loop_t* loop,
                              uv_fs_t* req,
                              const char* path,
                              uv_fs_cb cb);
-UV_EXTERN int uv_fs_fchmod(uv_loop_t* loop,
+UVAPI int uv_fs_fchmod(uv_loop_t* loop,
                            uv_fs_t* req,
                            uv_file file,
                            int mode,
                            uv_fs_cb cb);
-UV_EXTERN int uv_fs_chown(uv_loop_t* loop,
+UVAPI int uv_fs_chown(uv_loop_t* loop,
                           uv_fs_t* req,
                           const char* path,
                           uv_uid_t uid,
                           uv_gid_t gid,
                           uv_fs_cb cb);
-UV_EXTERN int uv_fs_fchown(uv_loop_t* loop,
+UVAPI int uv_fs_fchown(uv_loop_t* loop,
                            uv_fs_t* req,
                            uv_file file,
                            uv_uid_t uid,
@@ -1294,13 +1282,13 @@ struct uv_fs_poll_s {
   void* poll_ctx;
 };
 
-UV_EXTERN int uv_fs_poll_init(uv_loop_t* loop, uv_fs_poll_t* handle);
-UV_EXTERN int uv_fs_poll_start(uv_fs_poll_t* handle,
+UVAPI int uv_fs_poll_init(uv_loop_t* loop, uv_fs_poll_t* handle);
+UVAPI int uv_fs_poll_start(uv_fs_poll_t* handle,
                                uv_fs_poll_cb poll_cb,
                                const char* path,
                                unsigned int interval);
-UV_EXTERN int uv_fs_poll_stop(uv_fs_poll_t* handle);
-UV_EXTERN int uv_fs_poll_getpath(uv_fs_poll_t* handle,
+UVAPI int uv_fs_poll_stop(uv_fs_poll_t* handle);
+UVAPI int uv_fs_poll_getpath(uv_fs_poll_t* handle,
                                  char* buffer,
                                  size_t* size);
 
@@ -1312,13 +1300,13 @@ struct uv_signal_s {
   UV_SIGNAL_PRIVATE_FIELDS
 };
 
-UV_EXTERN int uv_signal_init(uv_loop_t* loop, uv_signal_t* handle);
-UV_EXTERN int uv_signal_start(uv_signal_t* handle,
+UVAPI int uv_signal_init(uv_loop_t* loop, uv_signal_t* handle);
+UVAPI int uv_signal_start(uv_signal_t* handle,
                               uv_signal_cb signal_cb,
                               int signum);
-UV_EXTERN int uv_signal_stop(uv_signal_t* handle);
+UVAPI int uv_signal_stop(uv_signal_t* handle);
 
-UV_EXTERN void uv_loadavg(double avg[3]);
+UVAPI void uv_loadavg(double avg[3]);
 
 
 /*
@@ -1352,91 +1340,91 @@ enum uv_fs_event_flags {
 };
 
 
-UV_EXTERN int uv_fs_event_init(uv_loop_t* loop, uv_fs_event_t* handle);
-UV_EXTERN int uv_fs_event_start(uv_fs_event_t* handle,
+UVAPI int uv_fs_event_init(uv_loop_t* loop, uv_fs_event_t* handle);
+UVAPI int uv_fs_event_start(uv_fs_event_t* handle,
                                 uv_fs_event_cb cb,
                                 const char* path,
                                 unsigned int flags);
-UV_EXTERN int uv_fs_event_stop(uv_fs_event_t* handle);
-UV_EXTERN int uv_fs_event_getpath(uv_fs_event_t* handle,
+UVAPI int uv_fs_event_stop(uv_fs_event_t* handle);
+UVAPI int uv_fs_event_getpath(uv_fs_event_t* handle,
                                   char* buffer,
                                   size_t* size);
 
-UV_EXTERN int uv_ip4_addr(const char* ip, int port, struct sockaddr_in* addr);
-UV_EXTERN int uv_ip6_addr(const char* ip, int port, struct sockaddr_in6* addr);
+UVAPI int uv_ip4_addr(const char* ip, int port, struct sockaddr_in* addr);
+UVAPI int uv_ip6_addr(const char* ip, int port, struct sockaddr_in6* addr);
 
-UV_EXTERN int uv_ip4_name(const struct sockaddr_in* src, char* dst, size_t size);
-UV_EXTERN int uv_ip6_name(const struct sockaddr_in6* src, char* dst, size_t size);
+UVAPI int uv_ip4_name(const struct sockaddr_in* src, char* dst, size_t size);
+UVAPI int uv_ip6_name(const struct sockaddr_in6* src, char* dst, size_t size);
 
-UV_EXTERN int uv_inet_ntop(int af, const void* src, char* dst, size_t size);
-UV_EXTERN int uv_inet_pton(int af, const char* src, void* dst);
+UVAPI int uv_inet_ntop(int af, const void* src, char* dst, size_t size);
+UVAPI int uv_inet_pton(int af, const char* src, void* dst);
 
-UV_EXTERN int uv_exepath(char* buffer, size_t* size);
+UVAPI int uv_exepath(char* buffer, size_t* size);
 
-UV_EXTERN int uv_cwd(char* buffer, size_t* size);
+UVAPI int uv_cwd(char* buffer, size_t* size);
 
-UV_EXTERN int uv_chdir(const char* dir);
+UVAPI int uv_chdir(const char* dir);
 
-UV_EXTERN uint64_t uv_get_free_memory(void);
-UV_EXTERN uint64_t uv_get_total_memory(void);
+UVAPI uint64_t uv_get_free_memory(void);
+UVAPI uint64_t uv_get_total_memory(void);
 
-UV_EXTERN uint64_t uv_hrtime(void);
+UVAPI uint64_t uv_hrtime(void);
 
-UV_EXTERN void uv_disable_stdio_inheritance(void);
+UVAPI void uv_disable_stdio_inheritance(void);
 
-UV_EXTERN int uv_dlopen(const char* filename, uv_lib_t* lib);
-UV_EXTERN void uv_dlclose(uv_lib_t* lib);
-UV_EXTERN int uv_dlsym(uv_lib_t* lib, const char* name, void** ptr);
-UV_EXTERN const char* uv_dlerror(const uv_lib_t* lib);
+UVAPI int uv_dlopen(const char* filename, uv_lib_t* lib);
+UVAPI void uv_dlclose(uv_lib_t* lib);
+UVAPI int uv_dlsym(uv_lib_t* lib, const char* name, void** ptr);
+UVAPI const char* uv_dlerror(const uv_lib_t* lib);
 
-UV_EXTERN int uv_mutex_init(uv_mutex_t* handle);
-UV_EXTERN void uv_mutex_destroy(uv_mutex_t* handle);
-UV_EXTERN void uv_mutex_lock(uv_mutex_t* handle);
-UV_EXTERN int uv_mutex_trylock(uv_mutex_t* handle);
-UV_EXTERN void uv_mutex_unlock(uv_mutex_t* handle);
+UVAPI int uv_mutex_init(uv_mutex_t* handle);
+UVAPI void uv_mutex_destroy(uv_mutex_t* handle);
+UVAPI void uv_mutex_lock(uv_mutex_t* handle);
+UVAPI int uv_mutex_trylock(uv_mutex_t* handle);
+UVAPI void uv_mutex_unlock(uv_mutex_t* handle);
 
-UV_EXTERN int uv_rwlock_init(uv_rwlock_t* rwlock);
-UV_EXTERN void uv_rwlock_destroy(uv_rwlock_t* rwlock);
-UV_EXTERN void uv_rwlock_rdlock(uv_rwlock_t* rwlock);
-UV_EXTERN int uv_rwlock_tryrdlock(uv_rwlock_t* rwlock);
-UV_EXTERN void uv_rwlock_rdunlock(uv_rwlock_t* rwlock);
-UV_EXTERN void uv_rwlock_wrlock(uv_rwlock_t* rwlock);
-UV_EXTERN int uv_rwlock_trywrlock(uv_rwlock_t* rwlock);
-UV_EXTERN void uv_rwlock_wrunlock(uv_rwlock_t* rwlock);
+UVAPI int uv_rwlock_init(uv_rwlock_t* rwlock);
+UVAPI void uv_rwlock_destroy(uv_rwlock_t* rwlock);
+UVAPI void uv_rwlock_rdlock(uv_rwlock_t* rwlock);
+UVAPI int uv_rwlock_tryrdlock(uv_rwlock_t* rwlock);
+UVAPI void uv_rwlock_rdunlock(uv_rwlock_t* rwlock);
+UVAPI void uv_rwlock_wrlock(uv_rwlock_t* rwlock);
+UVAPI int uv_rwlock_trywrlock(uv_rwlock_t* rwlock);
+UVAPI void uv_rwlock_wrunlock(uv_rwlock_t* rwlock);
 
-UV_EXTERN int uv_sem_init(uv_sem_t* sem, unsigned int value);
-UV_EXTERN void uv_sem_destroy(uv_sem_t* sem);
-UV_EXTERN void uv_sem_post(uv_sem_t* sem);
-UV_EXTERN void uv_sem_wait(uv_sem_t* sem);
-UV_EXTERN int uv_sem_trywait(uv_sem_t* sem);
+UVAPI int uv_sem_init(uv_sem_t* sem, unsigned int value);
+UVAPI void uv_sem_destroy(uv_sem_t* sem);
+UVAPI void uv_sem_post(uv_sem_t* sem);
+UVAPI void uv_sem_wait(uv_sem_t* sem);
+UVAPI int uv_sem_trywait(uv_sem_t* sem);
 
-UV_EXTERN int uv_cond_init(uv_cond_t* cond);
-UV_EXTERN void uv_cond_destroy(uv_cond_t* cond);
-UV_EXTERN void uv_cond_signal(uv_cond_t* cond);
-UV_EXTERN void uv_cond_broadcast(uv_cond_t* cond);
+UVAPI int uv_cond_init(uv_cond_t* cond);
+UVAPI void uv_cond_destroy(uv_cond_t* cond);
+UVAPI void uv_cond_signal(uv_cond_t* cond);
+UVAPI void uv_cond_broadcast(uv_cond_t* cond);
 
-UV_EXTERN int uv_barrier_init(uv_barrier_t* barrier, unsigned int count);
-UV_EXTERN void uv_barrier_destroy(uv_barrier_t* barrier);
-UV_EXTERN int uv_barrier_wait(uv_barrier_t* barrier);
+UVAPI int uv_barrier_init(uv_barrier_t* barrier, unsigned int count);
+UVAPI void uv_barrier_destroy(uv_barrier_t* barrier);
+UVAPI int uv_barrier_wait(uv_barrier_t* barrier);
 
-UV_EXTERN void uv_cond_wait(uv_cond_t* cond, uv_mutex_t* mutex);
-UV_EXTERN int uv_cond_timedwait(uv_cond_t* cond,
+UVAPI void uv_cond_wait(uv_cond_t* cond, uv_mutex_t* mutex);
+UVAPI int uv_cond_timedwait(uv_cond_t* cond,
                                 uv_mutex_t* mutex,
                                 uint64_t timeout);
 
-UV_EXTERN void uv_once(uv_once_t* guard, void (*callback)(void));
+UVAPI void uv_once(uv_once_t* guard, void (*callback)(void));
 
-UV_EXTERN int uv_key_create(uv_key_t* key);
-UV_EXTERN void uv_key_delete(uv_key_t* key);
-UV_EXTERN void* uv_key_get(uv_key_t* key);
-UV_EXTERN void uv_key_set(uv_key_t* key, void* value);
+UVAPI int uv_key_create(uv_key_t* key);
+UVAPI void uv_key_delete(uv_key_t* key);
+UVAPI void* uv_key_get(uv_key_t* key);
+UVAPI void uv_key_set(uv_key_t* key, void* value);
 
 typedef void (*uv_thread_cb)(void* arg);
 
-UV_EXTERN int uv_thread_create(uv_thread_t* tid, uv_thread_cb entry, void* arg);
-UV_EXTERN uv_thread_t uv_thread_self(void);
-UV_EXTERN int uv_thread_join(uv_thread_t *tid);
-UV_EXTERN int uv_thread_equal(const uv_thread_t* t1, const uv_thread_t* t2);
+UVAPI int uv_thread_create(uv_thread_t* tid, uv_thread_cb entry, void* arg);
+UVAPI uv_thread_t uv_thread_self(void);
+UVAPI int uv_thread_join(uv_thread_t *tid);
+UVAPI int uv_thread_equal(const uv_thread_t* t1, const uv_thread_t* t2);
 
 /* The presence of these unions force similar struct layout. */
 #define XX(_, name) uv_ ## name ## _t name;

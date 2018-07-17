@@ -38,25 +38,15 @@
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
-#define container_of(ptr, type, member) \
-  ((type *) ((char *) (ptr) - offsetof(type, member)))
-
 #define STATIC_ASSERT(expr)                                                   \
   void uv__static_assert(int static_assert_failed[1 - 2 * !(expr)])
 
-#ifndef _WIN32
 enum {
   UV__HANDLE_INTERNAL = 0x8000,
   UV__HANDLE_ACTIVE   = 0x4000,
   UV__HANDLE_REF      = 0x2000,
   UV__HANDLE_CLOSING  = 0 /* no-op on unix */
 };
-#else
-# define UV__HANDLE_INTERNAL  0x80
-# define UV__HANDLE_ACTIVE    0x40
-# define UV__HANDLE_REF       0x20
-# define UV__HANDLE_CLOSING   0x01
-#endif
 
 int uv__loop_configure(uv_loop_t* loop, uv_loop_option option, va_list ap);
 
@@ -190,11 +180,7 @@ void uv__fs_scandir_cleanup(uv_fs_t* req);
 #define uv__has_ref(h)                                                        \
   (((h)->flags & UV__HANDLE_REF) != 0)
 
-#if defined(_WIN32)
-# define uv__handle_platform_init(h) ((h)->u.fd = -1)
-#else
 # define uv__handle_platform_init(h) ((h)->next_closing = NULL)
-#endif
 
 #define uv__handle_init(loop_, h, type_)                                      \
   do {                                                                        \

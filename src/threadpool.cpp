@@ -21,22 +21,7 @@
 
 #include "uv-common.h"
 
-#if !defined(_WIN32)
 # include "unix/internal.h"
-#else
-# include "win/req-inl.h"
-/* TODO(saghul): unify internal req functions */
-static void uv__req_init(uv_loop_t* loop,
-                         uv_req_t* req,
-                         uv_req_type type) {
-  uv_req_init(loop, req);
-  req->type = type;
-  uv__req_register(loop, req);
-}
-# define uv__req_init(loop, req, type) \
-    uv__req_init((loop), (uv_req_t*)(req), (type))
-#endif
-
 #include <stdlib.h>
 
 #define MAX_THREADPOOL_SIZE 128
@@ -113,8 +98,8 @@ static void post(QUEUE* q) {
 }
 
 
-#ifndef _WIN32
-UV_DESTRUCTOR(static void cleanup(void)) {
+UV_DESTRUCTOR(static void cleanup(void))
+{
   unsigned int i;
 
   if (initialized == 0)
@@ -136,10 +121,10 @@ UV_DESTRUCTOR(static void cleanup(void)) {
   nthreads = 0;
   initialized = 0;
 }
-#endif
 
 
-static void init_once(void) {
+static void init_once(void)
+{
   unsigned int i;
   const char* val;
 
@@ -153,9 +138,11 @@ static void init_once(void) {
     nthreads = MAX_THREADPOOL_SIZE;
 
   threads = default_threads;
-  if (nthreads > ARRAY_SIZE(default_threads)) {
-    threads = uv__malloc(nthreads * sizeof(threads[0]));
-    if (threads == NULL) {
+  if (nthreads > ARRAY_SIZE(default_threads))
+  {
+    threads = (uv_thread_t *)uv__malloc(nthreads * sizeof(threads[0]));
+    if (threads == NULL)
+    {
       nthreads = ARRAY_SIZE(default_threads);
       threads = default_threads;
     }
@@ -177,10 +164,9 @@ static void init_once(void) {
 }
 
 
-void uv__work_submit(uv_loop_t* loop,
-                     struct uv__work* w,
-                     void (*work)(struct uv__work* w),
-                     void (*done)(struct uv__work* w, int status)) {
+void uv__work_submit(uv_loop_t* loop,struct uv__work* w,void (*work)(struct uv__work* w),
+                     void (*done)(struct uv__work* w, int status))
+{
   uv_once(&once, init_once);
   w->loop = loop;
   w->work = work;
@@ -189,7 +175,8 @@ void uv__work_submit(uv_loop_t* loop,
 }
 
 
-static int uv__work_cancel(uv_loop_t* loop, uv_req_t* req, struct uv__work* w) {
+static int uv__work_cancel(uv_loop_t* loop, uv_req_t* req, struct uv__work* w)
+{
   int cancelled;
 
   uv_mutex_lock(&mutex);
@@ -215,7 +202,8 @@ static int uv__work_cancel(uv_loop_t* loop, uv_req_t* req, struct uv__work* w) {
 }
 
 
-void uv__work_done(uv_async_t* handle) {
+void uv__work_done(uv_async_t* handle)
+{
   struct uv__work* w;
   uv_loop_t* loop;
   QUEUE* q;
@@ -238,14 +226,16 @@ void uv__work_done(uv_async_t* handle) {
 }
 
 
-static void uv__queue_work(struct uv__work* w) {
+static void uv__queue_work(struct uv__work* w)
+{
   uv_work_t* req = container_of(w, uv_work_t, work_req);
 
   req->work_cb(req);
 }
 
 
-static void uv__queue_done(struct uv__work* w, int err) {
+static void uv__queue_done(struct uv__work* w, int err)
+{
   uv_work_t* req;
 
   req = container_of(w, uv_work_t, work_req);
@@ -258,10 +248,9 @@ static void uv__queue_done(struct uv__work* w, int err) {
 }
 
 
-int uv_queue_work(uv_loop_t* loop,
-                  uv_work_t* req,
-                  uv_work_cb work_cb,
-                  uv_after_work_cb after_work_cb) {
+int uv_queue_work(uv_loop_t* loop,uv_work_t* req,uv_work_cb work_cb,
+                  uv_after_work_cb after_work_cb)
+{
   if (work_cb == NULL)
     return UV_EINVAL;
 
@@ -274,7 +263,8 @@ int uv_queue_work(uv_loop_t* loop,
 }
 
 
-int uv_cancel(uv_req_t* req) {
+int uv_cancel(uv_req_t* req)
+{
   struct uv__work* wreq;
   uv_loop_t* loop;
 

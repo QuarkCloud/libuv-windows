@@ -30,11 +30,7 @@
 #include <stdlib.h> /* malloc */
 #include <string.h> /* memset */
 
-#if defined(_WIN32)
-# include <malloc.h> /* malloc */
-#else
 # include <net/if.h> /* if_nametoindex */
-#endif
 
 
 typedef struct {
@@ -205,11 +201,7 @@ int uv_ip6_addr(const char* ip, int port, struct sockaddr_in6* addr) {
 
     zone_index++; /* skip '%' */
     /* NOTE: unknown interface (id=0) is silently ignored */
-#ifdef _WIN32
-    addr->sin6_scope_id = atoi(zone_index);
-#else
     addr->sin6_scope_id = if_nametoindex(zone_index);
-#endif
   }
 
   return uv_inet_pton(AF_INET6, ip, &addr->sin6_addr);
@@ -475,23 +467,16 @@ int uv_fs_event_getpath(uv_fs_event_t* handle, char* buffer, size_t* size) {
  * the unix implementation (nbufs is not directly inside req but is
  * contained in a nested union/struct) so this function locates it.
 */
-static unsigned int* uv__get_nbufs(uv_fs_t* req) {
-#ifdef _WIN32
-  return &req->fs.info.nbufs;
-#else
+static unsigned int* uv__get_nbufs(uv_fs_t* req)
+{
   return &req->nbufs;
-#endif
 }
 
 /* uv_fs_scandir() uses the system allocator to allocate memory on non-Windows
  * systems. So, the memory should be released using free(). On Windows,
  * uv__malloc() is used, so use uv__free() to free memory.
 */
-#ifdef _WIN32
-# define uv__fs_scandir_free uv__free
-#else
 # define uv__fs_scandir_free free
-#endif
 
 void uv__fs_scandir_cleanup(uv_fs_t* req) {
   uv__dirent_t** dents;
