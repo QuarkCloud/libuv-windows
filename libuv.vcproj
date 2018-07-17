@@ -41,8 +41,9 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)include&quot;;&quot;$(ProjectDir)include&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)include&quot;;&quot;$(QUARK_ROOT)include&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LIBUV_EXPORTS"
+				IgnoreStandardIncludePath="true"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -173,126 +174,126 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\src\fs-poll.c"
+				RelativePath=".\src\fs-poll.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\inet.c"
+				RelativePath=".\src\inet.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\threadpool.c"
+				RelativePath=".\src\threadpool.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\uv-common.c"
+				RelativePath=".\src\uv-common.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\version.c"
+				RelativePath=".\src\version.cpp"
 				>
 			</File>
 			<Filter
 				Name="unix"
 				>
 				<File
-					RelativePath=".\src\unix\async.c"
+					RelativePath=".\src\unix\async.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\core.c"
+					RelativePath=".\src\unix\core.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\dl.c"
+					RelativePath=".\src\unix\dl.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\fs.c"
+					RelativePath=".\src\unix\fs.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\fsevents.c"
+					RelativePath=".\src\unix\fsevents.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\getaddrinfo.c"
+					RelativePath=".\src\unix\getaddrinfo.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\getnameinfo.c"
+					RelativePath=".\src\unix\getnameinfo.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\linux-core.c"
+					RelativePath=".\src\unix\linux-core.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\linux-inotify.c"
+					RelativePath=".\src\unix\linux-inotify.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\linux-syscalls.c"
+					RelativePath=".\src\unix\linux-syscalls.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\loop-watcher.c"
+					RelativePath=".\src\unix\loop-watcher.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\loop.c"
+					RelativePath=".\src\unix\loop.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\pipe.c"
+					RelativePath=".\src\unix\pipe.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\poll.c"
+					RelativePath=".\src\unix\poll.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\process.c"
+					RelativePath=".\src\unix\process.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\proctitle.c"
+					RelativePath=".\src\unix\proctitle.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\pthread-barrier.c"
+					RelativePath=".\src\unix\pthread-barrier.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\pthread-fixes.c"
+					RelativePath=".\src\unix\pthread-fixes.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\signal.c"
+					RelativePath=".\src\unix\signal.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\stream.c"
+					RelativePath=".\src\unix\stream.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\tcp.c"
+					RelativePath=".\src\unix\tcp.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\thread.c"
+					RelativePath=".\src\unix\thread.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\timer.c"
+					RelativePath=".\src\unix\timer.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\tty.c"
+					RelativePath=".\src\unix\tty.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\udp.c"
+					RelativePath=".\src\unix\udp.cpp"
 					>
 				</File>
 			</Filter>
