@@ -174,126 +174,126 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\src\fs-poll.cpp"
+				RelativePath=".\fs-poll.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\inet.cpp"
+				RelativePath=".\inet.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\threadpool.cpp"
+				RelativePath=".\threadpool.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\uv-common.cpp"
+				RelativePath=".\uv-common.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\version.cpp"
+				RelativePath=".\version.cpp"
 				>
 			</File>
 			<Filter
 				Name="unix"
 				>
 				<File
-					RelativePath=".\src\unix\async.cpp"
+					RelativePath=".\unix\async.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\core.cpp"
+					RelativePath=".\unix\core.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\dl.cpp"
+					RelativePath=".\unix\dl.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\fs.cpp"
+					RelativePath=".\unix\fs.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\fsevents.cpp"
+					RelativePath=".\unix\fsevents.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\getaddrinfo.cpp"
+					RelativePath=".\unix\getaddrinfo.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\getnameinfo.cpp"
+					RelativePath=".\unix\getnameinfo.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\linux-core.cpp"
+					RelativePath=".\unix\linux-core.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\linux-inotify.cpp"
+					RelativePath=".\unix\linux-inotify.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\linux-syscalls.cpp"
+					RelativePath=".\unix\linux-syscalls.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\loop-watcher.cpp"
+					RelativePath=".\unix\loop-watcher.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\loop.cpp"
+					RelativePath=".\unix\loop.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\pipe.cpp"
+					RelativePath=".\unix\pipe.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\poll.cpp"
+					RelativePath=".\unix\poll.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\process.cpp"
+					RelativePath=".\unix\process.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\proctitle.cpp"
+					RelativePath=".\unix\proctitle.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\pthread-barrier.cpp"
+					RelativePath=".\unix\pthread-barrier.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\pthread-fixes.cpp"
+					RelativePath=".\unix\pthread-fixes.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\signal.cpp"
+					RelativePath=".\unix\signal.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\stream.cpp"
+					RelativePath=".\unix\stream.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\tcp.cpp"
+					RelativePath=".\unix\tcp.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\thread.cpp"
+					RelativePath=".\unix\thread.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\timer.cpp"
+					RelativePath=".\unix\timer.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\tty.cpp"
+					RelativePath=".\unix\tty.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\udp.cpp"
+					RelativePath=".\unix\udp.cpp"
 					>
 				</File>
 			</Filter>
@@ -304,66 +304,66 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\src\heap-inl.h"
+				RelativePath=".\heap-inl.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\pthread-barrier.h"
+				RelativePath="pthread-barrier.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\queue.h"
+				RelativePath=".\queue.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\tree.h"
+				RelativePath="tree.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\uv-common.h"
+				RelativePath=".\uv-common.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\uv-errno.h"
+				RelativePath="uv-errno.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\uv-linux.h"
+				RelativePath="uv-linux.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\uv-threadpool.h"
+				RelativePath="uv-threadpool.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\uv-unix.h"
+				RelativePath="uv-unix.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\uv-version.h"
+				RelativePath="uv-version.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\uv.h"
+				RelativePath="uv.h"
 				>
 			</File>
 			<Filter
 				Name="unix"
 				>
 				<File
-					RelativePath=".\src\unix\atomic-ops.h"
+					RelativePath=".\unix\atomic-ops.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\internal.h"
+					RelativePath=".\unix\internal.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\linux-syscalls.h"
+					RelativePath=".\unix\linux-syscalls.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\unix\spinlock.h"
+					RelativePath=".\unix\spinlock.h"
 					>
 				</File>
 			</Filter>

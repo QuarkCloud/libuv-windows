@@ -49,29 +49,32 @@ static uv__allocator_t uv__allocator = {
 
 char* uv__strdup(const char* s) {
   size_t len = strlen(s) + 1;
-  char* m = uv__malloc(len);
+  char* m = (char *)uv__malloc(len);
   if (m == NULL)
     return NULL;
-  return memcpy(m, s, len);
+  return (char *)memcpy(m, s, len);
 }
 
-char* uv__strndup(const char* s, size_t n) {
+char* uv__strndup(const char* s, size_t n)
+{
   char* m;
   size_t len = strlen(s);
   if (n < len)
     len = n;
-  m = uv__malloc(len + 1);
+  m = (char *)uv__malloc(len + 1);
   if (m == NULL)
     return NULL;
   m[len] = '\0';
-  return memcpy(m, s, len);
+  return (char *)memcpy(m, s, len);
 }
 
-void* uv__malloc(size_t size) {
+void* uv__malloc(size_t size)
+{
   return uv__allocator.local_malloc(size);
 }
 
-void uv__free(void* ptr) {
+void uv__free(void* ptr)
+{
   int saved_errno;
 
   /* Libuv expects that free() does not clobber errno.  The system allocator
@@ -82,20 +85,22 @@ void uv__free(void* ptr) {
   errno = saved_errno;
 }
 
-void* uv__calloc(size_t count, size_t size) {
+void* uv__calloc(size_t count, size_t size)
+{
   return uv__allocator.local_calloc(count, size);
 }
 
-void* uv__realloc(void* ptr, size_t size) {
+void* uv__realloc(void* ptr, size_t size)
+{
   return uv__allocator.local_realloc(ptr, size);
 }
 
-int uv_replace_allocator(uv_malloc_func malloc_func,
-                         uv_realloc_func realloc_func,
-                         uv_calloc_func calloc_func,
-                         uv_free_func free_func) {
+int uv_replace_allocator(uv_malloc_func malloc_func, uv_realloc_func realloc_func,
+                         uv_calloc_func calloc_func, uv_free_func free_func)
+{
   if (malloc_func == NULL || realloc_func == NULL ||
-      calloc_func == NULL || free_func == NULL) {
+      calloc_func == NULL || free_func == NULL) 
+  {
     return UV_EINVAL;
   }
 
