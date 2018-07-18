@@ -31,6 +31,7 @@
 
 #include <sys/types.h>
 #include <unistd.h>
+#include "linux-syscalls.h"
 
 struct watcher_list {
   RB_ENTRY(watcher_list) entry;

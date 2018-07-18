@@ -24,8 +24,8 @@
  * Windows and Unix backends.
  */
 
-#ifndef UV_COMMON_H_
-#define UV_COMMON_H_
+#ifndef __UV_COMMON_H_
+#define __UV_COMMON_H_ 1
 
 #include <assert.h>
 #include <stdarg.h>
@@ -38,8 +38,7 @@
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
-#define STATIC_ASSERT(expr)                                                   \
-  void uv__static_assert(int static_assert_failed[1 - 2 * !(expr)])
+#define STATIC_ASSERT(expr) void uv__static_assert(int static_assert_failed[1 - 2 * !(expr)])
 
 enum {
   UV__HANDLE_INTERNAL = 0x8000,
@@ -201,4 +200,4 @@ void* uv__malloc(size_t size);
 void uv__free(void* ptr);
 void* uv__realloc(void* ptr, size_t size);
 
-#endif /* UV_COMMON_H_ */
+#endif /* __UV_COMMON_H_ */

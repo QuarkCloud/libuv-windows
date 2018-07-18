@@ -98,7 +98,7 @@ static void post(QUEUE* q) {
 }
 
 
-UV_DESTRUCTOR(static void cleanup(void))
+static void cleanup(void)
 {
   unsigned int i;
 

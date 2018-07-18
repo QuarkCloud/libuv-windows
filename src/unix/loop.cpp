@@ -27,7 +27,8 @@
 #include <string.h>
 #include <unistd.h>
 
-int uv_loop_init(uv_loop_t* loop) {
+int uv_loop_init(uv_loop_t* loop)
+{
   void* saved_data;
   int err;
 

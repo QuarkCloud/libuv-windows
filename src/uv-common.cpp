@@ -488,7 +488,7 @@ void uv__fs_scandir_cleanup(uv_fs_t* req) {
 
   unsigned int* nbufs = uv__get_nbufs(req);
 
-  dents = req->ptr;
+  dents = (uv__dirent_t**)req->ptr;
   if (*nbufs > 0 && *nbufs != (unsigned int) req->result)
     (*nbufs)--;
   for (; *nbufs < (unsigned int) req->result; (*nbufs)++)
@@ -515,7 +515,7 @@ int uv_fs_scandir_next(uv_fs_t* req, uv_dirent_t* ent) {
   nbufs = uv__get_nbufs(req);
   assert(nbufs);
 
-  dents = req->ptr;
+  dents = (uv__dirent_t**)req->ptr;
 
   /* Free previous entity */
   if (*nbufs > 0)
@@ -597,7 +597,7 @@ uv_loop_t* uv_default_loop(void) {
 uv_loop_t* uv_loop_new(void) {
   uv_loop_t* loop;
 
-  loop = uv__malloc(sizeof(*loop));
+  loop = (uv_loop_t*)uv__malloc(sizeof(*loop));
   if (loop == NULL)
     return NULL;
 

@@ -43,18 +43,9 @@
 
 #define HAVE_IFADDRS_H 1
 
-#ifdef __UCLIBC__
-# if __UCLIBC_MAJOR__ < 0 && __UCLIBC_MINOR__ < 9 && __UCLIBC_SUBLEVEL__ < 32
-#  undef HAVE_IFADDRS_H
-# endif
-#endif
 
 #ifdef HAVE_IFADDRS_H
-# if defined(__ANDROID__)
-#  include "android-ifaddrs.h"
-# else
 #  include <ifaddrs.h>
-# endif
 # include <sys/socket.h>
 # include <net/ethernet.h>
 # include <netpacket/packet.h>
