@@ -170,7 +170,7 @@ int uv_getaddrinfo(uv_loop_t* loop,
   len = 0;
 
   if (hints) {
-    req->hints = memcpy(buf + len, hints, sizeof(*hints));
+    req->hints = (struct addrinfo*)memcpy(buf + len, hints, sizeof(*hints));
     len += sizeof(*hints);
   }
 
@@ -196,7 +196,8 @@ int uv_getaddrinfo(uv_loop_t* loop,
 }
 
 
-void uv_freeaddrinfo(struct addrinfo* ai) {
+void uv_freeaddrinfo(struct addrinfo* ai)
+{
   if (ai)
     freeaddrinfo(ai);
 }

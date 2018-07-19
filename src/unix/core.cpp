@@ -41,44 +41,6 @@
 #include <sys/resource.h> /* getrusage */
 #include <pwd.h>
 
-#ifdef __sun
-# include <sys/filio.h>
-# include <sys/types.h>
-# include <sys/wait.h>
-#endif
-
-#ifdef __APPLE__
-# include <mach-o/dyld.h> /* _NSGetExecutablePath */
-# include <sys/filio.h>
-# if defined(O_CLOEXEC)
-#  define UV__O_CLOEXEC O_CLOEXEC
-# endif
-#endif
-
-#if defined(__DragonFly__)      || \
-    defined(__FreeBSD__)        || \
-    defined(__FreeBSD_kernel__)
-# include <sys/sysctl.h>
-# include <sys/filio.h>
-# include <sys/wait.h>
-# define UV__O_CLOEXEC O_CLOEXEC
-# if defined(__FreeBSD__) && __FreeBSD__ >= 10
-#  define uv__accept4 accept4
-#  define UV__SOCK_NONBLOCK SOCK_NONBLOCK
-#  define UV__SOCK_CLOEXEC  SOCK_CLOEXEC
-# endif
-# if !defined(F_DUP2FD_CLOEXEC) && defined(_F_DUP2FD_CLOEXEC)
-#  define F_DUP2FD_CLOEXEC  _F_DUP2FD_CLOEXEC
-# endif
-#endif
-
-#if defined(__ANDROID_API__) && __ANDROID_API__ < 21
-# include <dlfcn.h>  /* for dlsym */
-#endif
-
-#if defined(__MVS__)
-#include <sys/ioctl.h>
-#endif
 
 static int uv__run_pending(uv_loop_t* loop);
 
@@ -429,7 +391,8 @@ int uv__socket(int domain, int type, int protocol) {
 }
 
 /* get a file pointer to a file in read-only and close-on-exec mode */
-FILE* uv__open_file(const char* path) {
+FILE* uv__open_file(const char* path)
+{
   int fd;
   FILE* fp;
 
@@ -445,14 +408,15 @@ FILE* uv__open_file(const char* path) {
 }
 
 
-int uv__accept(int sockfd) {
+int uv__accept(int sockfd)
+{
   int peerfd;
   int err;
 
   assert(sockfd >= 0);
 
-  while (1) {
-#if defined(__linux__) || (defined(__FreeBSD__) && __FreeBSD__ >= 10)
+  while(true)
+  {
     static int no_accept4;
 
     if (no_accept4)
@@ -473,7 +437,6 @@ int uv__accept(int sockfd) {
 
     no_accept4 = 1;
 skip:
-#endif
 
     peerfd = accept(sockfd, NULL, NULL);
     if (peerfd == -1) {
@@ -496,7 +459,8 @@ skip:
 }
 
 
-int uv__close_nocheckstdio(int fd) {
+int uv__close_nocheckstdio(int fd)
+{
   int saved_errno;
   int rc;
 
@@ -515,21 +479,20 @@ int uv__close_nocheckstdio(int fd) {
 }
 
 
-int uv__close(int fd) {
+int uv__close(int fd)
+{
   assert(fd > STDERR_FILENO);  /* Catch stdio close bugs. */
-#if defined(__MVS__)
-  epoll_file_close(fd);
-#endif
   return uv__close_nocheckstdio(fd);
 }
 
 
-int uv__nonblock_ioctl(int fd, int set) {
+int uv__nonblock_ioctl(int fd, int set)
+{
   int r;
 
-  do
+  do{
     r = ioctl(fd, FIONBIO, &set);
-  while (r == -1 && errno == EINTR);
+  }while (r == -1 && errno == EINTR);
 
   if (r)
     return -errno;
@@ -538,12 +501,13 @@ int uv__nonblock_ioctl(int fd, int set) {
 }
 
 
-int uv__cloexec_ioctl(int fd, int set) {
+int uv__cloexec_ioctl(int fd, int set)
+{
   int r;
 
-  do
+  do{
     r = ioctl(fd, set ? FIOCLEX : FIONCLEX);
-  while (r == -1 && errno == EINTR);
+  }while (r == -1 && errno == EINTR);
 
   if (r)
     return -errno;
@@ -552,7 +516,8 @@ int uv__cloexec_ioctl(int fd, int set) {
 }
 
 
-int uv__nonblock_fcntl(int fd, int set) {
+int uv__nonblock_fcntl(int fd, int set)
+{
   int flags;
   int r;
 
@@ -640,7 +605,7 @@ ssize_t uv__recvmsg(int fd, struct msghdr* msg, int flags) {
   ssize_t rc;
   int* pfd;
   int* end;
-#if defined(__linux__)
+
   static int no_msg_cmsg_cloexec;
   if (no_msg_cmsg_cloexec == 0) {
     rc = recvmsg(fd, msg, flags | 0x40000000);  /* MSG_CMSG_CLOEXEC */
@@ -655,9 +620,7 @@ ssize_t uv__recvmsg(int fd, struct msghdr* msg, int flags) {
   } else {
     rc = recvmsg(fd, msg, flags);
   }
-#else
-  rc = recvmsg(fd, msg, flags);
-#endif
+
   if (rc == -1)
     return -errno;
   if (msg->msg_controllen == 0)
@@ -673,7 +636,8 @@ ssize_t uv__recvmsg(int fd, struct msghdr* msg, int flags) {
 }
 
 
-int uv_cwd(char* buffer, size_t* size) {
+int uv_cwd(char* buffer, size_t* size)
+{
   if (buffer == NULL || size == NULL)
     return -EINVAL;
 
@@ -690,7 +654,8 @@ int uv_cwd(char* buffer, size_t* size) {
 }
 
 
-int uv_chdir(const char* dir) {
+int uv_chdir(const char* dir)
+{
   if (chdir(dir))
     return -errno;
 
@@ -698,7 +663,8 @@ int uv_chdir(const char* dir) {
 }
 
 
-void uv_disable_stdio_inheritance(void) {
+void uv_disable_stdio_inheritance(void)
+{
   int fd;
 
   /* Set the CLOEXEC flag on all open descriptors. Unconditionally try the
@@ -710,7 +676,8 @@ void uv_disable_stdio_inheritance(void) {
 }
 
 
-int uv_fileno(const uv_handle_t* handle, uv_os_fd_t* fd) {
+int uv_fileno(const uv_handle_t* handle, uv_os_fd_t* fd)
+{
   int fd_out;
 
   switch (handle->type) {
@@ -740,7 +707,8 @@ int uv_fileno(const uv_handle_t* handle, uv_os_fd_t* fd) {
 }
 
 
-static int uv__run_pending(uv_loop_t* loop) {
+static int uv__run_pending(uv_loop_t* loop)
+{
   QUEUE* q;
   QUEUE pq;
   uv__io_t* w;
@@ -762,7 +730,8 @@ static int uv__run_pending(uv_loop_t* loop) {
 }
 
 
-static unsigned int next_power_of_two(unsigned int val) {
+static unsigned int next_power_of_two(unsigned int val)
+{
   val -= 1;
   val |= val >> 1;
   val |= val >> 2;
@@ -773,7 +742,8 @@ static unsigned int next_power_of_two(unsigned int val) {
   return val;
 }
 
-static void maybe_resize(uv_loop_t* loop, unsigned int len) {
+static void maybe_resize(uv_loop_t* loop, unsigned int len)
+{
   uv__io_t** watchers;
   void* fake_watcher_list;
   void* fake_watcher_count;
@@ -793,15 +763,15 @@ static void maybe_resize(uv_loop_t* loop, unsigned int len) {
   }
 
   nwatchers = next_power_of_two(len + 2) - 2;
-  watchers = uv__realloc(loop->watchers,
+  watchers = (uv__io_t**)uv__realloc(loop->watchers,
                          (nwatchers + 2) * sizeof(loop->watchers[0]));
 
   if (watchers == NULL)
     abort();
   for (i = loop->nwatchers; i < nwatchers; i++)
     watchers[i] = NULL;
-  watchers[nwatchers] = fake_watcher_list;
-  watchers[nwatchers + 1] = fake_watcher_count;
+  watchers[nwatchers] = (uv__io_t*)fake_watcher_list;
+  watchers[nwatchers + 1] = (uv__io_t*)fake_watcher_count;
 
   loop->watchers = watchers;
   loop->nwatchers = nwatchers;
@@ -1165,7 +1135,7 @@ int uv__getpwuid_r(uv_passwd_t* pwd) {
 
   for (;;) {
     uv__free(buf);
-    buf = uv__malloc(bufsize);
+    buf = (char *)uv__malloc(bufsize);
 
     if (buf == NULL)
       return -ENOMEM;
@@ -1192,7 +1162,7 @@ int uv__getpwuid_r(uv_passwd_t* pwd) {
   name_size = strlen(pw.pw_name) + 1;
   homedir_size = strlen(pw.pw_dir) + 1;
   shell_size = strlen(pw.pw_shell) + 1;
-  pwd->username = uv__malloc(name_size + homedir_size + shell_size);
+  pwd->username = (char *)uv__malloc(name_size + homedir_size + shell_size);
 
   if (pwd->username == NULL) {
     uv__free(buf);

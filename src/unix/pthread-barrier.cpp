@@ -32,7 +32,7 @@ int pthread_barrier_init(pthread_barrier_t* barrier,
   if (barrier_attr != NULL)
     return ENOTSUP;
 
-  b = uv__malloc(sizeof(*b));
+  b = (_uv_barrier*)uv__malloc(sizeof(*b));
   if (b == NULL)
     return ENOMEM;
 

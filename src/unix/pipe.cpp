@@ -282,7 +282,7 @@ int uv_pipe_pending_count(uv_pipe_t* handle) {
   if (handle->queued_fds == NULL)
     return 1;
 
-  queued_fds = handle->queued_fds;
+  queued_fds = (uv__stream_queued_fds_t* )handle->queued_fds;
   return queued_fds->offset + 1;
 }
 

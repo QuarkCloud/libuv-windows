@@ -587,7 +587,7 @@ done:
   if (server->queued_fds != NULL) {
     uv__stream_queued_fds_t* queued_fds;
 
-    queued_fds = server->queued_fds;
+    queued_fds = (uv__stream_queued_fds_t* )server->queued_fds;
 
     /* Read first */
     server->accepted_fd = queued_fds->fds[0];
@@ -782,24 +782,14 @@ start:
     /* silence aliasing warning */
     {
       void* pv = CMSG_DATA(cmsg);
-      int* pi = pv;
+      int* pi = (int *)pv;
       *pi = fd_to_send;
     }
 
     do {
       n = sendmsg(uv__stream_fd(stream), &msg, 0);
-    }
-#if defined(__APPLE__)
-    /*
-     * Due to a possible kernel bug at least in OS X 10.10 "Yosemite",
-     * EPROTOTYPE can be returned while trying to write to a socket that is
-     * shutting down. If we retry the write, we should get the expected EPIPE
-     * instead.
-     */
-    while (n == -1 && (errno == EINTR || errno == EPROTOTYPE));
-#else
-    while (n == -1 && errno == EINTR);
-#endif
+    }while (n == -1 && errno == EINTR);
+
   } else {
     do {
       if (iovcnt == 1) {
@@ -982,10 +972,10 @@ static int uv__stream_queue_fd(uv_stream_t* stream, int fd) {
   uv__stream_queued_fds_t* queued_fds;
   unsigned int queue_size;
 
-  queued_fds = stream->queued_fds;
+  queued_fds = (uv__stream_queued_fds_t*)stream->queued_fds;
   if (queued_fds == NULL) {
     queue_size = 8;
-    queued_fds = uv__malloc((queue_size - 1) * sizeof(*queued_fds->fds) +
+    queued_fds = (uv__stream_queued_fds_t* )uv__malloc((queue_size - 1) * sizeof(*queued_fds->fds) +
                             sizeof(*queued_fds));
     if (queued_fds == NULL)
       return -ENOMEM;
@@ -996,7 +986,7 @@ static int uv__stream_queue_fd(uv_stream_t* stream, int fd) {
     /* Grow */
   } else if (queued_fds->size == queued_fds->offset) {
     queue_size = queued_fds->size + 8;
-    queued_fds = uv__realloc(queued_fds,
+    queued_fds = (uv__stream_queued_fds_t* )uv__realloc(queued_fds,
                              (queue_size - 1) * sizeof(*queued_fds->fds) +
                               sizeof(*queued_fds));
 

@@ -182,7 +182,8 @@ static void (*pFSEventStreamStop)(FSEventStreamRef);
 
 
 /* Runs in UV loop's thread, when there're events to report to handle */
-static void uv__fsevents_cb(uv_async_t* cb) {
+static void uv__fsevents_cb(uv_async_t* cb)
+{
   uv_fs_event_t* handle;
 
   handle = cb->data;
@@ -194,9 +195,8 @@ static void uv__fsevents_cb(uv_async_t* cb) {
 
 
 /* Runs in CF thread, pushed event into handle's event list */
-static void uv__fsevents_push_event(uv_fs_event_t* handle,
-                                    QUEUE* events,
-                                    int err) {
+static void uv__fsevents_push_event(uv_fs_event_t* handle,QUEUE* events, int err)
+{
   assert(events != NULL || err != 0);
   uv_mutex_lock(&handle->cf_mutex);
 
@@ -219,7 +219,8 @@ static void uv__fsevents_event_cb(ConstFSEventStreamRef streamRef,
                                   size_t numEvents,
                                   void* eventPaths,
                                   const FSEventStreamEventFlags eventFlags[],
-                                  const FSEventStreamEventId eventIds[]) {
+                                  const FSEventStreamEventId eventIds[])
+{
   size_t i;
   int len;
   char** paths;
@@ -267,11 +268,6 @@ static void uv__fsevents_event_cb(ConstFSEventStreamRef streamRef,
         }
       }
 
-#ifdef MAC_OS_X_VERSION_10_7
-      /* Ignore events with path equal to directory itself */
-      if (len == 0)
-        continue;
-#endif /* MAC_OS_X_VERSION_10_7 */
 
       /* Do not emit events from subdirectories (without option set) */
       if ((handle->cf_flags & UV_FS_EVENT_RECURSIVE) == 0 && *path != 0) {
@@ -280,10 +276,8 @@ static void uv__fsevents_event_cb(ConstFSEventStreamRef streamRef,
           continue;
       }
 
-#ifndef MAC_OS_X_VERSION_10_7
       path = "";
       len = 0;
-#endif /* MAC_OS_X_VERSION_10_7 */
 
       event = uv__malloc(sizeof(*event) + len);
       if (event == NULL)
@@ -576,7 +570,8 @@ out:
 
 
 /* Runs in UV loop */
-static int uv__fsevents_loop_init(uv_loop_t* loop) {
+static int uv__fsevents_loop_init(uv_loop_t* loop)
+{
   CFRunLoopSourceContext ctx;
   uv__cf_loop_state_t* state;
   pthread_attr_t attr_storage;
@@ -674,7 +669,8 @@ fail_mutex_init:
 
 
 /* Runs in UV loop */
-void uv__fsevents_loop_delete(uv_loop_t* loop) {
+void uv__fsevents_loop_delete(uv_loop_t* loop)
+{
   uv__cf_loop_signal_t* s;
   uv__cf_loop_state_t* state;
   QUEUE* q;
@@ -708,7 +704,8 @@ void uv__fsevents_loop_delete(uv_loop_t* loop) {
 
 
 /* Runs in CF thread. This is the CF loop's body */
-static void* uv__cf_loop_runner(void* arg) {
+static void* uv__cf_loop_runner(void* arg)
+{
   uv_loop_t* loop;
   uv__cf_loop_state_t* state;
 
@@ -732,7 +729,8 @@ static void* uv__cf_loop_runner(void* arg) {
 
 
 /* Runs in CF thread, executed after `uv__cf_loop_signal()` */
-static void uv__cf_loop_cb(void* arg) {
+static void uv__cf_loop_cb(void* arg)
+{
   uv_loop_t* loop;
   uv__cf_loop_state_t* state;
   QUEUE* item;
@@ -764,9 +762,8 @@ static void uv__cf_loop_cb(void* arg) {
 
 
 /* Runs in UV loop to notify CF thread */
-int uv__cf_loop_signal(uv_loop_t* loop,
-                       uv_fs_event_t* handle,
-                       uv__cf_loop_signal_type_t type) {
+int uv__cf_loop_signal(uv_loop_t* loop,uv_fs_event_t* handle,uv__cf_loop_signal_type_t type)
+{
   uv__cf_loop_signal_t* item;
   uv__cf_loop_state_t* state;
 
