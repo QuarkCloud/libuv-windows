@@ -888,11 +888,11 @@ int uv_getrusage(uv_rusage_t* rusage) {
   if (getrusage(RUSAGE_SELF, &usage))
     return -errno;
 
-  rusage->ru_utime.tv_sec = usage.ru_utime.tv_sec;
-  rusage->ru_utime.tv_usec = usage.ru_utime.tv_usec;
+  rusage->ru_utime.tv_sec = (long)usage.ru_utime.tv_sec;
+  rusage->ru_utime.tv_usec = (long)usage.ru_utime.tv_usec;
 
-  rusage->ru_stime.tv_sec = usage.ru_stime.tv_sec;
-  rusage->ru_stime.tv_usec = usage.ru_stime.tv_usec;
+  rusage->ru_stime.tv_sec = (long)usage.ru_stime.tv_sec;
+  rusage->ru_stime.tv_usec = (long)usage.ru_stime.tv_usec;
 
 #if !defined(__MVS__)
   rusage->ru_maxrss = usage.ru_maxrss;
@@ -1101,7 +1101,8 @@ return_buffer:
 }
 
 
-int uv__getpwuid_r(uv_passwd_t* pwd) {
+int uv__getpwuid_r(uv_passwd_t* pwd)
+{
   struct passwd pw;
   struct passwd* result;
   char* buf;
@@ -1112,15 +1113,8 @@ int uv__getpwuid_r(uv_passwd_t* pwd) {
   size_t shell_size;
   long initsize;
   int r;
-#if defined(__ANDROID_API__) && __ANDROID_API__ < 21
-  int (*getpwuid_r)(uid_t, struct passwd*, char*, size_t, struct passwd**);
 
-  getpwuid_r = dlsym(RTLD_DEFAULT, "getpwuid_r");
-  if (getpwuid_r == NULL)
-    return -ENOSYS;
-#endif
-
-  if (pwd == NULL)
+  if(pwd == NULL)
     return -EINVAL;
 
   initsize = sysconf(_SC_GETPW_R_SIZE_MAX);

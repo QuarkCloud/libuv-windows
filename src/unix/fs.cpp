@@ -45,26 +45,15 @@
 #include <fcntl.h>
 #include <utime.h>
 #include <poll.h>
-
-#if defined(__DragonFly__)        ||                                      \
-    defined(__FreeBSD__)          ||                                      \
-    defined(__FreeBSD_kernel_)    ||                                      \
-    defined(__OpenBSD__)          ||                                      \
-    defined(__NetBSD__)
-# define HAVE_PREADV 1
-#else
-# define HAVE_PREADV 0
-#endif
-
-#if defined(__linux__) || defined(__sun)
 # include <sys/sendfile.h>
-#endif
+
+# define HAVE_PREADV 0
 
 #define INIT(subtype)                                                         \
   do {                                                                        \
     req->type = UV_FS;                                                        \
     if (cb != NULL)                                                           \
-      uv__req_init(loop, req, UV_FS);                                         \
+      uv__req_init(loop, req, UV_FS);                                        \
     req->fs_type = UV_FS_ ## subtype;                                         \
     req->result = 0;                                                          \
     req->ptr = NULL;                                                          \
@@ -100,7 +89,7 @@
       size_t new_path_len;                                                    \
       path_len = strlen(path) + 1;                                            \
       new_path_len = strlen(new_path) + 1;                                    \
-      req->path = uv__malloc(path_len + new_path_len);                        \
+      req->path = (char *)uv__malloc(path_len + new_path_len);                \
       if (req->path == NULL) {                                                \
         uv__req_unregister(loop, req);                                        \
         return -ENOMEM;                                                       \
@@ -126,34 +115,20 @@
   while (0)
 
 
-static ssize_t uv__fs_fdatasync(uv_fs_t* req) {
-#if defined(__linux__) || defined(__sun) || defined(__NetBSD__)
-  return fdatasync(req->file);
-#elif defined(__APPLE__)
-  /* Apple's fdatasync and fsync explicitly do NOT flush the drive write cache
-   * to the drive platters. This is in contrast to Linux's fdatasync and fsync
-   * which do, according to recent man pages. F_FULLFSYNC is Apple's equivalent
-   * for flushing buffered data to permanent storage.
-   */
-  return fcntl(req->file, F_FULLFSYNC);
-#else
+static ssize_t uv__fs_fdatasync(uv_fs_t* req){
+  //return fdatasync(req->file);
   return fsync(req->file);
-#endif
 }
 
 
-static ssize_t uv__fs_fsync(uv_fs_t* req) {
-#if defined(__APPLE__)
-  /* See the comment in uv__fs_fdatasync. */
-  return fcntl(req->file, F_FULLFSYNC);
-#else
+static ssize_t uv__fs_fsync(uv_fs_t* req)
+{
   return fsync(req->file);
-#endif
 }
 
 
-static ssize_t uv__fs_futime(uv_fs_t* req) {
-#if defined(__linux__)
+static ssize_t uv__fs_futime(uv_fs_t* req)
+{
   /* utimesat() has nanosecond resolution but we stick to microseconds
    * for the sake of consistency with other platforms.
    */
@@ -166,9 +141,9 @@ static ssize_t uv__fs_futime(uv_fs_t* req) {
   if (no_utimesat)
     goto skip;
 
-  ts[0].tv_sec  = req->atime;
+  ts[0].tv_sec  = (time_t)req->atime;
   ts[0].tv_nsec = (uint64_t)(req->atime * 1000000) % 1000000 * 1000;
-  ts[1].tv_sec  = req->mtime;
+  ts[1].tv_sec  = (time_t)req->mtime;
   ts[1].tv_nsec = (uint64_t)(req->mtime * 1000000) % 1000000 * 1000;
 
   r = uv__utimesat(req->file, NULL, ts, 0);
@@ -182,9 +157,9 @@ static ssize_t uv__fs_futime(uv_fs_t* req) {
 
 skip:
 
-  tv[0].tv_sec  = req->atime;
+  tv[0].tv_sec  = (time_t)req->atime;
   tv[0].tv_usec = (uint64_t)(req->atime * 1000000) % 1000000;
-  tv[1].tv_sec  = req->mtime;
+  tv[1].tv_sec  = (time_t)req->mtime;
   tv[1].tv_usec = (uint64_t)(req->mtime * 1000000) % 1000000;
   snprintf(path, sizeof(path), "/proc/self/fd/%d", (int) req->file);
 
@@ -205,47 +180,11 @@ skip:
   }
 
   return r;
-
-#elif defined(__APPLE__)                                                      \
-    || defined(__DragonFly__)                                                 \
-    || defined(__FreeBSD__)                                                   \
-    || defined(__FreeBSD_kernel__)                                            \
-    || defined(__NetBSD__)                                                    \
-    || defined(__OpenBSD__)                                                   \
-    || defined(__sun)
-  struct timeval tv[2];
-  tv[0].tv_sec  = req->atime;
-  tv[0].tv_usec = (uint64_t)(req->atime * 1000000) % 1000000;
-  tv[1].tv_sec  = req->mtime;
-  tv[1].tv_usec = (uint64_t)(req->mtime * 1000000) % 1000000;
-# if defined(__sun)
-  return futimesat(req->file, NULL, tv);
-# else
-  return futimes(req->file, tv);
-# endif
-#elif defined(_AIX71)
-  struct timespec ts[2];
-  ts[0].tv_sec  = req->atime;
-  ts[0].tv_nsec = (uint64_t)(req->atime * 1000000) % 1000000 * 1000;
-  ts[1].tv_sec  = req->mtime;
-  ts[1].tv_nsec = (uint64_t)(req->mtime * 1000000) % 1000000 * 1000;
-  return futimens(req->file, ts);
-#elif defined(__MVS__)
-  attrib_t atr;
-  memset(&atr, 0, sizeof(atr));
-  atr.att_mtimechg = 1;
-  atr.att_atimechg = 1;
-  atr.att_mtime = req->mtime;
-  atr.att_atime = req->atime;
-  return __fchattr(req->file, &atr, sizeof(atr));
-#else
-  errno = ENOSYS;
-  return -1;
-#endif
 }
 
 
-static ssize_t uv__fs_mkdtemp(uv_fs_t* req) {
+static ssize_t uv__fs_mkdtemp(uv_fs_t* req) 
+{
   return mkdtemp((char*) req->path) ? 0 : -1;
 }
 
@@ -289,20 +228,10 @@ static ssize_t uv__fs_open(uv_fs_t* req) {
 
 
 static ssize_t uv__fs_read(uv_fs_t* req) {
-#if defined(__linux__)
   static int no_preadv;
-#endif
+
   ssize_t result;
 
-#if defined(_AIX)
-  struct stat buf;
-  if(fstat(req->file, &buf))
-    return -1;
-  if(S_ISDIR(buf.st_mode)) {
-    errno = EISDIR;
-    return -1;
-  }
-#endif /* defined(_AIX) */
   if (req->off < 0) {
     if (req->nbufs == 1)
       result = read(req->file, req->bufs[0].base, req->bufs[0].len);
@@ -313,47 +242,7 @@ static ssize_t uv__fs_read(uv_fs_t* req) {
       result = pread(req->file, req->bufs[0].base, req->bufs[0].len, req->off);
       goto done;
     }
-
-#if HAVE_PREADV
     result = preadv(req->file, (struct iovec*) req->bufs, req->nbufs, req->off);
-#else
-# if defined(__linux__)
-    if (no_preadv) retry:
-# endif
-    {
-      off_t nread;
-      size_t index;
-
-      nread = 0;
-      index = 0;
-      result = 1;
-      do {
-        if (req->bufs[index].len > 0) {
-          result = pread(req->file,
-                         req->bufs[index].base,
-                         req->bufs[index].len,
-                         req->off + nread);
-          if (result > 0)
-            nread += result;
-        }
-        index++;
-      } while (index < req->nbufs && result > 0);
-      if (nread > 0)
-        result = nread;
-    }
-# if defined(__linux__)
-    else {
-      result = uv__preadv(req->file,
-                          (struct iovec*)req->bufs,
-                          req->nbufs,
-                          req->off);
-      if (result == -1 && errno == ENOSYS) {
-        no_preadv = 1;
-        goto retry;
-      }
-    }
-# endif
-#endif
   }
 
 done:
@@ -361,11 +250,7 @@ done:
 }
 
 
-#if defined(__APPLE__) && !defined(MAC_OS_X_VERSION_10_8)
-#define UV_CONST_DIRENT uv__dirent_t
-#else
 #define UV_CONST_DIRENT const uv__dirent_t
-#endif
 
 
 static int uv__fs_scandir_filter(UV_CONST_DIRENT* dent) {
@@ -378,7 +263,8 @@ static int uv__fs_scandir_sort(UV_CONST_DIRENT** a, UV_CONST_DIRENT** b) {
 }
 
 
-static ssize_t uv__fs_scandir(uv_fs_t* req) {
+static ssize_t uv__fs_scandir(uv_fs_t* req)
+{
   uv__dirent_t **dents;
   int n;
 
@@ -404,23 +290,20 @@ static ssize_t uv__fs_scandir(uv_fs_t* req) {
 }
 
 
-static ssize_t uv__fs_pathmax_size(const char* path) {
+static ssize_t uv__fs_pathmax_size(const char* path)
+{
   ssize_t pathmax;
 
   pathmax = pathconf(path, _PC_PATH_MAX);
 
-  if (pathmax == -1) {
-#if defined(PATH_MAX)
+  if (pathmax == -1)
     return PATH_MAX;
-#else
-#error "PATH_MAX undefined in the current platform"
-#endif
-  }
-
-  return pathmax;
+  else
+    return pathmax;
 }
 
-static ssize_t uv__fs_readlink(uv_fs_t* req) {
+static ssize_t uv__fs_readlink(uv_fs_t* req)
+{
   ssize_t len;
   char* buf;
 
@@ -682,29 +565,20 @@ static ssize_t uv__fs_sendfile(uv_fs_t* req) {
 
 static ssize_t uv__fs_utime(uv_fs_t* req) {
   struct utimbuf buf;
-  buf.actime = req->atime;
-  buf.modtime = req->mtime;
+  buf.actime = (time_t)req->atime;
+  buf.modtime = (time_t)req->mtime;
   return utime(req->path, &buf); /* TODO use utimes() where available */
 }
 
 
 static ssize_t uv__fs_write(uv_fs_t* req) {
-#if defined(__linux__)
   static int no_pwritev;
-#endif
   ssize_t r;
 
   /* Serialize writes on OS X, concurrent write() and pwrite() calls result in
    * data loss. We can't use a per-file descriptor lock, the descriptor may be
    * a dup().
    */
-#if defined(__APPLE__)
-  static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
-
-  if (pthread_mutex_lock(&lock))
-    abort();
-#endif
-
   if (req->off < 0) {
     if (req->nbufs == 1)
       r = write(req->file, req->bufs[0].base, req->bufs[0].len);
@@ -715,54 +589,10 @@ static ssize_t uv__fs_write(uv_fs_t* req) {
       r = pwrite(req->file, req->bufs[0].base, req->bufs[0].len, req->off);
       goto done;
     }
-#if HAVE_PREADV
     r = pwritev(req->file, (struct iovec*) req->bufs, req->nbufs, req->off);
-#else
-# if defined(__linux__)
-    if (no_pwritev) retry:
-# endif
-    {
-      off_t written;
-      size_t index;
-
-      written = 0;
-      index = 0;
-      r = 0;
-      do {
-        if (req->bufs[index].len > 0) {
-          r = pwrite(req->file,
-                     req->bufs[index].base,
-                     req->bufs[index].len,
-                     req->off + written);
-          if (r > 0)
-            written += r;
-        }
-        index++;
-      } while (index < req->nbufs && r >= 0);
-      if (written > 0)
-        r = written;
-    }
-# if defined(__linux__)
-    else {
-      r = uv__pwritev(req->file,
-                      (struct iovec*) req->bufs,
-                      req->nbufs,
-                      req->off);
-      if (r == -1 && errno == ENOSYS) {
-        no_pwritev = 1;
-        goto retry;
-      }
-    }
-# endif
-#endif
   }
 
 done:
-#if defined(__APPLE__)
-  if (pthread_mutex_unlock(&lock))
-    abort();
-#endif
-
   return r;
 }
 
@@ -778,68 +608,12 @@ static void uv__to_stat(struct stat* src, uv_stat_t* dst) {
   dst->st_blksize = src->st_blksize;
   dst->st_blocks = src->st_blocks;
 
-#if defined(__APPLE__)
-  dst->st_atim.tv_sec = src->st_atimespec.tv_sec;
-  dst->st_atim.tv_nsec = src->st_atimespec.tv_nsec;
-  dst->st_mtim.tv_sec = src->st_mtimespec.tv_sec;
-  dst->st_mtim.tv_nsec = src->st_mtimespec.tv_nsec;
-  dst->st_ctim.tv_sec = src->st_ctimespec.tv_sec;
-  dst->st_ctim.tv_nsec = src->st_ctimespec.tv_nsec;
-  dst->st_birthtim.tv_sec = src->st_birthtimespec.tv_sec;
-  dst->st_birthtim.tv_nsec = src->st_birthtimespec.tv_nsec;
-  dst->st_flags = src->st_flags;
-  dst->st_gen = src->st_gen;
-#elif defined(__ANDROID__)
-  dst->st_atim.tv_sec = src->st_atime;
-  dst->st_atim.tv_nsec = src->st_atimensec;
-  dst->st_mtim.tv_sec = src->st_mtime;
-  dst->st_mtim.tv_nsec = src->st_mtimensec;
-  dst->st_ctim.tv_sec = src->st_ctime;
-  dst->st_ctim.tv_nsec = src->st_ctimensec;
-  dst->st_birthtim.tv_sec = src->st_ctime;
-  dst->st_birthtim.tv_nsec = src->st_ctimensec;
-  dst->st_flags = 0;
-  dst->st_gen = 0;
-#elif !defined(_AIX) && (       \
-    defined(__DragonFly__)   || \
-    defined(__FreeBSD__)     || \
-    defined(__OpenBSD__)     || \
-    defined(__NetBSD__)      || \
-    defined(_GNU_SOURCE)     || \
-    defined(_BSD_SOURCE)     || \
-    defined(_SVID_SOURCE)    || \
-    defined(_XOPEN_SOURCE)   || \
-    defined(_DEFAULT_SOURCE))
-  dst->st_atim.tv_sec = src->st_atim.tv_sec;
-  dst->st_atim.tv_nsec = src->st_atim.tv_nsec;
-  dst->st_mtim.tv_sec = src->st_mtim.tv_sec;
-  dst->st_mtim.tv_nsec = src->st_mtim.tv_nsec;
-  dst->st_ctim.tv_sec = src->st_ctim.tv_sec;
-  dst->st_ctim.tv_nsec = src->st_ctim.tv_nsec;
-# if defined(__FreeBSD__)    || \
-     defined(__NetBSD__)
-  dst->st_birthtim.tv_sec = src->st_birthtim.tv_sec;
-  dst->st_birthtim.tv_nsec = src->st_birthtim.tv_nsec;
-  dst->st_flags = src->st_flags;
-  dst->st_gen = src->st_gen;
-# else
-  dst->st_birthtim.tv_sec = src->st_ctim.tv_sec;
-  dst->st_birthtim.tv_nsec = src->st_ctim.tv_nsec;
-  dst->st_flags = 0;
-  dst->st_gen = 0;
-# endif
-#else
-  dst->st_atim.tv_sec = src->st_atime;
+  dst->st_atim.tv_sec = (long)src->st_atime;
   dst->st_atim.tv_nsec = 0;
-  dst->st_mtim.tv_sec = src->st_mtime;
+  dst->st_mtim.tv_sec = (long)src->st_mtime ;
   dst->st_mtim.tv_nsec = 0;
-  dst->st_ctim.tv_sec = src->st_ctime;
+  dst->st_ctim.tv_sec = (long)src->st_ctime ;
   dst->st_ctim.tv_nsec = 0;
-  dst->st_birthtim.tv_sec = src->st_ctime;
-  dst->st_birthtim.tv_nsec = 0;
-  dst->st_flags = 0;
-  dst->st_gen = 0;
-#endif
 }
 
 
@@ -1102,7 +876,7 @@ int uv_fs_ftruncate(uv_loop_t* loop,
                     uv_fs_cb cb) {
   INIT(FTRUNCATE);
   req->file = file;
-  req->off = off;
+  req->off = (off_t)off;
   POST;
 }
 
@@ -1202,7 +976,7 @@ int uv_fs_read(uv_loop_t* loop, uv_fs_t* req,
 
   memcpy(req->bufs, bufs, nbufs * sizeof(*bufs));
 
-  req->off = off;
+  req->off = (off_t)off;
   POST;
 }
 
@@ -1267,7 +1041,7 @@ int uv_fs_sendfile(uv_loop_t* loop,
   INIT(SENDFILE);
   req->flags = in_fd; /* hack */
   req->file = out_fd;
-  req->off = off;
+  req->off = (off_t)off;
   req->bufsml[0].len = len;
   POST;
 }
@@ -1340,7 +1114,7 @@ int uv_fs_write(uv_loop_t* loop,
 
   memcpy(req->bufs, bufs, nbufs * sizeof(*bufs));
 
-  req->off = off;
+  req->off = (off_t)off;
   POST;
 }
 

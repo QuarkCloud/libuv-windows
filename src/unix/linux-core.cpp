@@ -45,7 +45,7 @@
 
 
 #ifdef HAVE_IFADDRS_H
-#  include <ifaddrs.h>
+# include <ifaddrs.h>
 # include <sys/socket.h>
 # include <net/ethernet.h>
 # include <netpacket/packet.h>

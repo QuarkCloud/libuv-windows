@@ -341,7 +341,7 @@ typedef struct {
   mode_t mode;                                                                \
   unsigned int nbufs;                                                         \
   uv_buf_t* bufs;                                                             \
-  off_t off;                                                                  \
+  off_t off;                                                                \
   uv_uid_t uid;                                                               \
   uv_gid_t gid;                                                               \
   double atime;                                                               \
