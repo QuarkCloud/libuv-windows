@@ -40,7 +40,8 @@ int uv_pipe_init(uv_loop_t* loop, uv_pipe_t* handle, int ipc) {
 }
 
 
-int uv_pipe_bind(uv_pipe_t* handle, const char* name) {
+int uv_pipe_bind(uv_pipe_t* handle, const char* name)
+{
   struct sockaddr_un saddr;
   const char* pipe_fname;
   int sockfd;
@@ -152,10 +153,8 @@ int uv_pipe_open(uv_pipe_t* handle, uv_file fd) {
 }
 
 
-void uv_pipe_connect(uv_connect_t* req,
-                    uv_pipe_t* handle,
-                    const char* name,
-                    uv_connect_cb cb) {
+void uv_pipe_connect(uv_connect_t* req,uv_pipe_t* handle,const char* name,uv_connect_cb cb)
+{
   struct sockaddr_un saddr;
   int new_sock;
   int err;
@@ -215,10 +214,8 @@ out:
 typedef int (*uv__peersockfunc)(int, struct sockaddr*, socklen_t*);
 
 
-static int uv__pipe_getsockpeername(const uv_pipe_t* handle,
-                                    uv__peersockfunc func,
-                                    char* buffer,
-                                    size_t* size) {
+static int uv__pipe_getsockpeername(const uv_pipe_t* handle,uv__peersockfunc func,char* buffer,size_t* size)
+{
   struct sockaddr_un sa;
   socklen_t addrlen;
   int err;

@@ -27,9 +27,6 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
-#if defined(__MVS__)
-#include <xti.h>
-#endif
 
 #if defined(IPV6_JOIN_GROUP) && !defined(IPV6_ADD_MEMBERSHIP)
 # define IPV6_ADD_MEMBERSHIP IPV6_JOIN_GROUP
@@ -49,7 +46,8 @@ static int uv__udp_maybe_deferred_bind(uv_udp_t* handle,
                                        unsigned int flags);
 
 
-void uv__udp_close(uv_udp_t* handle) {
+void uv__udp_close(uv_udp_t* handle)
+{
   uv__io_close(handle->loop, &handle->io_watcher);
   uv__handle_stop(handle);
 
@@ -60,14 +58,16 @@ void uv__udp_close(uv_udp_t* handle) {
 }
 
 
-void uv__udp_finish_close(uv_udp_t* handle) {
+void uv__udp_finish_close(uv_udp_t* handle)
+{
   uv_udp_send_t* req;
   QUEUE* q;
 
   assert(!uv__io_active(&handle->io_watcher, POLLIN | POLLOUT));
   assert(handle->io_watcher.fd == -1);
 
-  while (!QUEUE_EMPTY(&handle->write_queue)) {
+  while (!QUEUE_EMPTY(&handle->write_queue))
+  {
     q = QUEUE_HEAD(&handle->write_queue);
     QUEUE_REMOVE(q);
 
@@ -88,7 +88,8 @@ void uv__udp_finish_close(uv_udp_t* handle) {
 }
 
 
-static void uv__udp_run_completed(uv_udp_t* handle) {
+static void uv__udp_run_completed(uv_udp_t* handle)
+{
   uv_udp_send_t* req;
   QUEUE* q;
 
@@ -132,7 +133,8 @@ static void uv__udp_run_completed(uv_udp_t* handle) {
 }
 
 
-static void uv__udp_io(uv_loop_t* loop, uv__io_t* w, unsigned int revents) {
+static void uv__udp_io(uv_loop_t* loop, uv__io_t* w, unsigned int revents)
+{
   uv_udp_t* handle;
 
   handle = container_of(w, uv_udp_t, io_watcher);
@@ -148,7 +150,8 @@ static void uv__udp_io(uv_loop_t* loop, uv__io_t* w, unsigned int revents) {
 }
 
 
-static void uv__udp_recvmsg(uv_udp_t* handle) {
+static void uv__udp_recvmsg(uv_udp_t* handle)
+{
   struct sockaddr_storage peer;
   struct msghdr h;
   ssize_t nread;
@@ -213,7 +216,8 @@ static void uv__udp_recvmsg(uv_udp_t* handle) {
 }
 
 
-static void uv__udp_sendmsg(uv_udp_t* handle) {
+static void uv__udp_sendmsg(uv_udp_t* handle)
+{
   uv_udp_send_t* req;
   QUEUE* q;
   struct msghdr h;
@@ -262,27 +266,20 @@ static void uv__udp_sendmsg(uv_udp_t* handle) {
  * from the current listener.  While useful, it's not something we can emulate
  * on other platforms so we don't enable it.
  */
-static int uv__set_reuse(int fd) {
+static int uv__set_reuse(int fd)
+{
   int yes;
 
-#if defined(SO_REUSEPORT) && !defined(__linux__)
-  yes = 1;
-  if (setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, &yes, sizeof(yes)))
-    return -errno;
-#else
   yes = 1;
   if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)))
     return -errno;
-#endif
 
   return 0;
 }
 
 
-int uv__udp_bind(uv_udp_t* handle,
-                 const struct sockaddr* addr,
-                 unsigned int addrlen,
-                 unsigned int flags) {
+int uv__udp_bind(uv_udp_t* handle,const struct sockaddr* addr,unsigned int addrlen,unsigned int flags)
+{
   int err;
   int yes;
   int fd;
@@ -358,7 +355,7 @@ static int uv__udp_maybe_deferred_bind(uv_udp_t* handle,
   switch (domain) {
   case AF_INET:
   {
-    struct sockaddr_in* addr = (void*)&taddr;
+    struct sockaddr_in* addr = (struct sockaddr_in*)&taddr;
     memset(addr, 0, sizeof *addr);
     addr->sin_family = AF_INET;
     addr->sin_addr.s_addr = INADDR_ANY;
@@ -367,7 +364,7 @@ static int uv__udp_maybe_deferred_bind(uv_udp_t* handle,
   }
   case AF_INET6:
   {
-    struct sockaddr_in6* addr = (void*)&taddr;
+    struct sockaddr_in6* addr = (struct sockaddr_in6*)&taddr;
     memset(addr, 0, sizeof *addr);
     addr->sin6_family = AF_INET6;
     addr->sin6_addr = in6addr_any;

@@ -48,7 +48,7 @@
 # include <ifaddrs.h>
 # include <sys/socket.h>
 # include <net/ethernet.h>
-# include <netpacket/packet.h>
+//# include <netpacket/packet.h>
 #endif /* HAVE_IFADDRS_H */
 
 /* Available from 2.6.32 onwards. */
@@ -313,11 +313,11 @@ void uv__io_poll(uv_loop_t* loop, int timeout) {
     nevents = 0;
 
     assert(loop->watchers != NULL);
-    loop->watchers[loop->nwatchers] = (void*) events;
-    loop->watchers[loop->nwatchers + 1] = (void*) (uintptr_t) nfds;
+    loop->watchers[loop->nwatchers] = (uv__io_t*) events;
+    loop->watchers[loop->nwatchers + 1] = (uv__io_t*) (uintptr_t) nfds;
     for (i = 0; i < nfds; i++) {
       pe = events + i;
-      fd = pe->data;
+      fd = (int)pe->data;
 
       /* Skip invalidated events, see uv__platform_invalidate_fd */
       if (fd == -1)
@@ -403,7 +403,7 @@ void uv__io_poll(uv_loop_t* loop, int timeout) {
 update_timeout:
     assert(timeout > 0);
 
-    real_timeout -= (loop->time - base);
+    real_timeout -= (int)(loop->time - base);
     if (real_timeout <= 0)
       return;
 
@@ -438,7 +438,7 @@ uint64_t uv__hrtime(uv_clocktype_t type) {
   if (type == UV_CLOCK_FAST)
     clock_id = fast_clock_id;
 
-  if (clock_gettime(clock_id, &t))
+  if (clock_gettime((clockid_t)clock_id, &t))
     return 0;  /* Not really possible. */
 
   return t.tv_sec * (uint64_t) 1e9 + t.tv_nsec;
@@ -571,7 +571,7 @@ int uv_uptime(double* uptime) {
   if (r)
     return -errno;
 
-  *uptime = now.tv_sec;
+  *uptime = (double)now.tv_sec;
   return 0;
 }
 
@@ -616,7 +616,7 @@ int uv_cpu_info(uv_cpu_info_t** cpu_infos, int* count) {
     goto out;
 
   err = -ENOMEM;
-  ci = uv__calloc(numcpus, sizeof(*ci));
+  ci = (uv_cpu_info_t *)uv__calloc(numcpus, sizeof(*ci));
   if (ci == NULL)
     goto out;
 
@@ -890,7 +890,7 @@ int uv_interface_addresses(uv_interface_address_t** addresses,
   if (*count == 0)
     return 0;
 
-  *addresses = uv__malloc(*count * sizeof(**addresses));
+  *addresses = (uv_interface_address_t *)uv__malloc(*count * sizeof(**addresses));
   if (!(*addresses)) {
     freeifaddrs(addrs);
     return -ENOMEM;

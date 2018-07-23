@@ -213,10 +213,6 @@
 					>
 				</File>
 				<File
-					RelativePath=".\unix\fsevents.cpp"
-					>
-				</File>
-				<File
 					RelativePath=".\unix\getaddrinfo.cpp"
 					>
 				</File>
@@ -308,7 +304,7 @@
 				>
 			</File>
 			<File
-				RelativePath="pthread-barrier.h"
+				RelativePath="..\include\pthread-barrier.h"
 				>
 			</File>
 			<File
@@ -316,7 +312,7 @@
 				>
 			</File>
 			<File
-				RelativePath="tree.h"
+				RelativePath="..\include\tree.h"
 				>
 			</File>
 			<File
@@ -324,27 +320,27 @@
 				>
 			</File>
 			<File
-				RelativePath="uv-errno.h"
+				RelativePath="..\include\uv-errno.h"
 				>
 			</File>
 			<File
-				RelativePath="uv-linux.h"
+				RelativePath="..\include\uv-linux.h"
 				>
 			</File>
 			<File
-				RelativePath="uv-threadpool.h"
+				RelativePath="..\include\uv-threadpool.h"
 				>
 			</File>
 			<File
-				RelativePath="uv-unix.h"
+				RelativePath="..\include\uv-unix.h"
 				>
 			</File>
 			<File
-				RelativePath="uv-version.h"
+				RelativePath="..\include\uv-version.h"
 				>
 			</File>
 			<File
-				RelativePath="uv.h"
+				RelativePath="..\include\uv.h"
 				>
 			</File>
 			<Filter

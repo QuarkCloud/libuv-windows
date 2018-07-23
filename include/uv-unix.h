@@ -36,31 +36,12 @@
 #include <termios.h>
 #include <pwd.h>
 
-#if !defined(__MVS__)
 #include <semaphore.h>
-#endif
 #include <pthread.h>
 #include <signal.h>
 
 #include "uv-threadpool.h"
-
-#if defined(__linux__)
 # include "uv-linux.h"
-#elif defined (__MVS__)
-# include "uv-os390.h"
-#elif defined(_AIX)
-# include "uv-aix.h"
-#elif defined(__sun)
-# include "uv-sunos.h"
-#elif defined(__APPLE__)
-# include "uv-darwin.h"
-#elif defined(__DragonFly__)       || \
-      defined(__FreeBSD__)         || \
-      defined(__FreeBSD_kernel__)  || \
-      defined(__OpenBSD__)         || \
-      defined(__NetBSD__)
-# include "uv-bsd.h"
-#endif
 
 #ifndef PTHREAD_BARRIER_SERIAL_THREAD
 # include "pthread-barrier.h"
@@ -82,9 +63,7 @@ struct uv__io_s;
 struct uv__async;
 struct uv_loop_s;
 
-typedef void (*uv__io_cb)(struct uv_loop_s* loop,
-                          struct uv__io_s* w,
-                          unsigned int events);
+typedef void (*uv__io_cb)(struct uv_loop_s* loop, struct uv__io_s* w, unsigned int events);
 typedef struct uv__io_s uv__io_t;
 
 struct uv__io_s {

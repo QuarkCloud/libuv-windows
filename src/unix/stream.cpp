@@ -1031,7 +1031,7 @@ static int uv__stream_recv_cmsg(uv_stream_t* stream, struct msghdr* msg) {
 
     /* silence aliasing warning */
     pv = CMSG_DATA(cmsg);
-    pi = pv;
+    pi = (int *)pv;
 
     /* Count available fds */
     start = (char*) cmsg;
@@ -1386,7 +1386,7 @@ int uv_write2(uv_write_t* req,
 
   req->bufs = req->bufsml;
   if (nbufs > ARRAY_SIZE(req->bufsml))
-    req->bufs = uv__malloc(nbufs * sizeof(bufs[0]));
+    req->bufs = (uv_buf_t *)uv__malloc(nbufs * sizeof(bufs[0]));
 
   if (req->bufs == NULL)
     return -ENOMEM;
@@ -1607,8 +1607,9 @@ void uv__stream_close(uv_stream_t* handle) {
   }
 
   /* Close all queued fds */
-  if (handle->queued_fds != NULL) {
-    queued_fds = handle->queued_fds;
+  if (handle->queued_fds != NULL)
+  {
+    queued_fds = (uv__stream_queued_fds_t *)handle->queued_fds;
     for (i = 0; i < queued_fds->offset; i++)
       uv__close(queued_fds->fds[i]);
     uv__free(handle->queued_fds);
