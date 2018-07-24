@@ -471,7 +471,6 @@ static ssize_t uv__fs_sendfile(uv_fs_t* req) {
   in_fd = req->flags;
   out_fd = req->file;
 
-#if defined(__linux__) || defined(__sun)
   {
     off_t off;
     ssize_t r;
@@ -499,67 +498,6 @@ static ssize_t uv__fs_sendfile(uv_fs_t* req) {
 
     return -1;
   }
-#elif defined(__APPLE__)           || \
-      defined(__DragonFly__)       || \
-      defined(__FreeBSD__)         || \
-      defined(__FreeBSD_kernel__)
-  {
-    off_t len;
-    ssize_t r;
-
-    /* sendfile() on FreeBSD and Darwin returns EAGAIN if the target fd is in
-     * non-blocking mode and not all data could be written. If a non-zero
-     * number of bytes have been sent, we don't consider it an error.
-     */
-
-#if defined(__FreeBSD__) || defined(__DragonFly__)
-    len = 0;
-    r = sendfile(in_fd, out_fd, req->off, req->bufsml[0].len, NULL, &len, 0);
-#elif defined(__FreeBSD_kernel__)
-    len = 0;
-    r = bsd_sendfile(in_fd,
-                     out_fd,
-                     req->off,
-                     req->bufsml[0].len,
-                     NULL,
-                     &len,
-                     0);
-#else
-    /* The darwin sendfile takes len as an input for the length to send,
-     * so make sure to initialize it with the caller's value. */
-    len = req->bufsml[0].len;
-    r = sendfile(in_fd, out_fd, req->off, &len, NULL, 0);
-#endif
-
-     /*
-     * The man page for sendfile(2) on DragonFly states that `len` contains
-     * a meaningful value ONLY in case of EAGAIN and EINTR.
-     * Nothing is said about it's value in case of other errors, so better
-     * not depend on the potential wrong assumption that is was not modified
-     * by the syscall.
-     */
-    if (r == 0 || ((errno == EAGAIN || errno == EINTR) && len != 0)) {
-      req->off += len;
-      return (ssize_t) len;
-    }
-
-    if (errno == EINVAL ||
-        errno == EIO ||
-        errno == ENOTSOCK ||
-        errno == EXDEV) {
-      errno = 0;
-      return uv__fs_sendfile_emul(req);
-    }
-
-    return -1;
-  }
-#else
-  /* Squelch compiler warnings. */
-  (void) &in_fd;
-  (void) &out_fd;
-
-  return uv__fs_sendfile_emul(req);
-#endif
 }
 
 

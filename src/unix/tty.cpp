@@ -40,19 +40,8 @@ static uv_spinlock_t termios_spinlock = UV_SPINLOCK_INITIALIZER;
 
 static int uv__tty_is_slave(const int fd) {
   int result;
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
   int dummy;
-
   result = ioctl(fd, TIOCGPTN, &dummy) != 0;
-#elif defined(__APPLE__)
-  char dummy[256];
-
-  result = ioctl(fd, TIOCPTYGNAME, &dummy) != 0;
-#else
-  /* Fallback to ptsname
-   */
-  result = ptsname(fd) == NULL;
-#endif
   return result;
 }
 

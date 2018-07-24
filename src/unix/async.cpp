@@ -130,7 +130,6 @@ static void uv__async_io(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
 
   wa = container_of(w, struct uv__async, io_watcher);
 
-#if defined(__linux__)
   if (wa->wfd == -1) {
     uint64_t val;
     assert(n == sizeof(val));
@@ -138,7 +137,6 @@ static void uv__async_io(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
     wa->cb(loop, wa, val);
     return;
   }
-#endif
 
   wa->cb(loop, wa, n);
 }
@@ -154,14 +152,12 @@ void uv__async_send(struct uv__async* wa) {
   len = 1;
   fd = wa->wfd;
 
-#if defined(__linux__)
   if (fd == -1) {
     static const uint64_t val = 1;
     buf = &val;
     len = sizeof(val);
     fd = wa->io_watcher.fd;  /* eventfd */
   }
-#endif
 
   do
     r = write(fd, buf, len);
@@ -198,7 +194,6 @@ int uv__async_start(uv_loop_t* loop, struct uv__async* wa, uv__async_cb cb) {
   }
   else if (err == -ENOSYS) {
     err = uv__make_pipe(pipefd, UV__F_NONBLOCK);
-#if defined(__linux__)
     /* Save a file descriptor by opening one of the pipe descriptors as
      * read/write through the procfs.  That file descriptor can then
      * function as both ends of the pipe.
@@ -216,7 +211,6 @@ int uv__async_start(uv_loop_t* loop, struct uv__async* wa, uv__async_cb cb) {
         pipefd[1] = fd;
       }
     }
-#endif
   }
 
   if (err < 0)
@@ -247,8 +241,9 @@ void uv__async_stop(uv_loop_t* loop, struct uv__async* wa) {
 }
 
 
-static int uv__async_eventfd() {
-#if defined(__linux__)
+static int uv__async_eventfd()
+{
+
   static int no_eventfd2;
   static int no_eventfd;
   int fd;
@@ -283,8 +278,6 @@ skip_eventfd2:
   no_eventfd = 1;
 
 skip_eventfd:
-
-#endif
 
   return -ENOSYS;
 }

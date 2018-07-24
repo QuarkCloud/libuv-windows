@@ -99,7 +99,7 @@ int uv_get_process_title(char* buffer, size_t size) {
 }
 
 
-UV_DESTRUCTOR(static void free_args_mem(void))
+static void free_args_mem(void)
 {
   uv__free(args_mem);  /* Keep valgrind happy. */
   args_mem = NULL;

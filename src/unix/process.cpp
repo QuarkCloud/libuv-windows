@@ -33,17 +33,8 @@
 #include <fcntl.h>
 #include <poll.h>
 
-#if defined(__APPLE__) && !TARGET_OS_IPHONE
-# include <crt_externs.h>
-# define environ (*_NSGetEnviron())
-#else
 extern char **environ;
-#endif
-
-#if defined(__linux__) || defined(__GLIBC__)
 # include <grp.h>
-#endif
-
 
 static void uv__chld(uv_signal_t* handle, int signum) {
   uv_process_t* process;
@@ -113,7 +104,6 @@ static void uv__chld(uv_signal_t* handle, int signum) {
 
 
 int uv__make_socketpair(int fds[2], int flags) {
-#if defined(__linux__)
   static int no_cloexec;
 
   if (no_cloexec)
@@ -131,8 +121,6 @@ int uv__make_socketpair(int fds[2], int flags) {
   no_cloexec = 1;
 
 skip:
-#endif
-
   if (socketpair(AF_UNIX, SOCK_STREAM, 0, fds))
     return -errno;
 
@@ -148,8 +136,8 @@ skip:
 }
 
 
-int uv__make_pipe(int fds[2], int flags) {
-#if defined(__linux__)
+int uv__make_pipe(int fds[2], int flags)
+{
   static int no_pipe2;
 
   if (no_pipe2)
@@ -164,7 +152,6 @@ int uv__make_pipe(int fds[2], int flags) {
   no_pipe2 = 1;
 
 skip:
-#endif
 
   if (pipe(fds))
     return -errno;
@@ -385,12 +372,11 @@ static void uv__process_child_init(const uv_process_options_t* options,
 
 int uv_spawn(uv_loop_t* loop,uv_process_t* process,const uv_process_options_t* options)
 {
-#if defined(__APPLE__) && (TARGET_OS_TV || TARGET_OS_WATCH)
-  /* fork is marked __WATCHOS_PROHIBITED __TVOS_PROHIBITED. */
-  return -ENOSYS;
-#else
   int signal_pipe[2] = { -1, -1 };
-  int (*pipes)[2];
+  //typedef int[2]  pipe_pair_t ;
+  //pipe_pair_t * pipes;
+  typedef int (*pipes_t)[2] ;
+  pipes_t  pipes ;
   int stdio_count;
   ssize_t r;
   pid_t pid;
@@ -414,7 +400,7 @@ int uv_spawn(uv_loop_t* loop,uv_process_t* process,const uv_process_options_t* o
     stdio_count = 3;
 
   err = -ENOMEM;
-  pipes = uv__malloc(stdio_count * sizeof(*pipes));
+  pipes = (pipes_t)uv__malloc(stdio_count * sizeof(pipes_t));
   if (pipes == NULL)
     goto error;
 
@@ -537,7 +523,6 @@ error:
   }
 
   return err;
-#endif
 }
 
 

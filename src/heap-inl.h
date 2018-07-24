@@ -18,11 +18,7 @@
 
 #include <stddef.h>  /* NULL */
 
-#if defined(__GNUC__)
-# define HEAP_EXPORT(declaration) __attribute__((unused)) static declaration
-#else
 # define HEAP_EXPORT(declaration) static declaration
-#endif
 
 struct heap_node {
   struct heap_node* left;
