@@ -33,7 +33,7 @@
 #include <fcntl.h>
 #include <poll.h>
 
-extern char **environ;
+//extern char **environ;
 # include <grp.h>
 
 static void uv__chld(uv_signal_t* handle, int signum) {
