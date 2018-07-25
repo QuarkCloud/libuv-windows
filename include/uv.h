@@ -963,7 +963,7 @@ struct uv_cpu_times_s {
     uint64_t sys;
     uint64_t idle;
     uint64_t irq;
-} cpu_times;
+} ;
 
 struct uv_cpu_info_s {
   char* model;

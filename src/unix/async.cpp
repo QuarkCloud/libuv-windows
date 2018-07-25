@@ -134,7 +134,7 @@ static void uv__async_io(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
     uint64_t val;
     assert(n == sizeof(val));
     memcpy(&val, buf, sizeof(val));  /* Avoid alignment issues. */
-    wa->cb(loop, wa, val);
+    wa->cb(loop, wa, (uint32_t)val);
     return;
   }
 
