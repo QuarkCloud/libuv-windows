@@ -34,35 +34,19 @@ TEST_IMPL(get_passwd) {
   len = strlen(pwd.username);
   ASSERT(len > 0);
 
-#ifdef _WIN32
-  ASSERT(pwd.shell == NULL);
-#else
   len = strlen(pwd.shell);
   ASSERT(len > 0);
-#endif
 
   len = strlen(pwd.homedir);
   ASSERT(len > 0);
 
-#ifdef _WIN32
-  if (len == 3 && pwd.homedir[1] == ':')
-    ASSERT(pwd.homedir[2] == '\\');
-  else
-    ASSERT(pwd.homedir[len - 1] != '\\');
-#else
   if (len == 1)
     ASSERT(pwd.homedir[0] == '/');
   else
     ASSERT(pwd.homedir[len - 1] != '/');
-#endif
 
-#ifdef _WIN32
-  ASSERT(pwd.uid == -1);
-  ASSERT(pwd.gid == -1);
-#else
   ASSERT(pwd.uid >= 0);
   ASSERT(pwd.gid >= 0);
-#endif
 
   /* Test uv_os_free_passwd() */
   uv_os_free_passwd(&pwd);

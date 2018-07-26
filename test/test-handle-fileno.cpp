@@ -25,21 +25,7 @@
 
 static int get_tty_fd(void) {
   /* Make sure we have an FD that refers to a tty */
-#ifdef _WIN32
-  HANDLE handle;
-  handle = CreateFileA("conout$",
-                       GENERIC_READ | GENERIC_WRITE,
-                       FILE_SHARE_READ | FILE_SHARE_WRITE,
-                       NULL,
-                       OPEN_EXISTING,
-                       FILE_ATTRIBUTE_NORMAL,
-                       NULL);
-  if (handle == INVALID_HANDLE_VALUE)
-    return -1;
-  return _open_osfhandle((intptr_t) handle, 0);
-#else /* unix */
   return open("/dev/tty", O_RDONLY, 0);
-#endif
 }
 
 

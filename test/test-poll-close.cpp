@@ -21,11 +21,9 @@
 
 #include <errno.h>
 
-#ifndef _WIN32
-# include <fcntl.h>
-# include <sys/socket.h>
-# include <unistd.h>
-#endif
+#include <fcntl.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
 #include "uv.h"
 #include "task.h"
@@ -45,14 +43,6 @@ TEST_IMPL(poll_close) {
   uv_os_sock_t sockets[NUM_SOCKETS];
   uv_poll_t poll_handles[NUM_SOCKETS];
   int i;
-
-#ifdef _WIN32
-  {
-    struct WSAData wsa_data;
-    int r = WSAStartup(MAKEWORD(2, 2), &wsa_data);
-    ASSERT(r == 0);
-  }
-#endif
 
   for (i = 0; i < NUM_SOCKETS; i++) {
     sockets[i] = socket(AF_INET, SOCK_STREAM, 0);

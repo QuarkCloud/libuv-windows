@@ -129,8 +129,9 @@ typedef struct {
 /* This function is run inside a pthread. We do this so that we can possibly
  * timeout.
  */
-static void* dowait(void* data) {
-  dowait_args* args = data;
+static void* dowait(void* data)
+{
+  dowait_args* args = (dowait_args*)data;
 
   int i, r;
   process_info_t* p;
@@ -228,10 +229,8 @@ int process_wait(process_info_t* vec, int n, int timeout) {
     assert(tv.tv_sec > timebase.tv_sec ||
            (tv.tv_sec == timebase.tv_sec && tv.tv_usec >= timebase.tv_usec));
 
-    elapsed_ms =
-        (tv.tv_sec - timebase.tv_sec) * 1000 +
-        (tv.tv_usec / 1000) -
-        (timebase.tv_usec / 1000);
+    elapsed_ms =(unsigned int)((tv.tv_sec - timebase.tv_sec) * 1000 +
+        (tv.tv_usec / 1000) -(timebase.tv_usec / 1000));
 
     r = 0;  /* Timeout. */
     if (elapsed_ms >= (unsigned) timeout)

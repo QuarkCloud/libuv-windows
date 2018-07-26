@@ -19,7 +19,6 @@
  * IN THE SOFTWARE.
  */
 
-#if !defined(_WIN32)
 
 #include "uv.h"
 #include "task.h"
@@ -73,4 +72,3 @@ TEST_IMPL(close_fd) {
   return 0;
 }
 
-#endif  /* !defined(_WIN32) */

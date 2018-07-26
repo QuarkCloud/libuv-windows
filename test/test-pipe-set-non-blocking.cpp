@@ -16,13 +16,6 @@
 #include "uv.h"
 #include "task.h"
 
-#ifdef _WIN32
-
-TEST_IMPL(pipe_set_non_blocking) {
-  RETURN_SKIP("Test not implemented on Windows.");
-}
-
-#else  /* !_WIN32 */
 
 #include <errno.h>
 #include <string.h>
@@ -95,5 +88,3 @@ TEST_IMPL(pipe_set_non_blocking) {
   MAKE_VALGRIND_HAPPY();
   return 0;
 }
-
-#endif  /* !_WIN32 */

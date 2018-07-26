@@ -45,21 +45,17 @@ TEST_DECLARE   (semaphore_1)
 TEST_DECLARE   (semaphore_2)
 TEST_DECLARE   (semaphore_3)
 TEST_DECLARE   (tty)
-#ifdef _WIN32
-TEST_DECLARE   (tty_raw)
-TEST_DECLARE   (tty_empty_write)
-TEST_DECLARE   (tty_large_write)
-#endif
+
 TEST_DECLARE   (tty_file)
 TEST_DECLARE   (tty_pty)
 TEST_DECLARE   (stdio_over_pipes)
 TEST_DECLARE   (ip6_pton)
 TEST_DECLARE   (ipc_listen_before_write)
 TEST_DECLARE   (ipc_listen_after_write)
-#ifndef _WIN32
+
 TEST_DECLARE   (ipc_send_recv_pipe)
 TEST_DECLARE   (ipc_send_recv_pipe_inprocess)
-#endif
+
 TEST_DECLARE   (ipc_send_recv_tcp)
 TEST_DECLARE   (ipc_send_recv_tcp_inprocess)
 TEST_DECLARE   (ipc_tcp_connection)
@@ -69,9 +65,9 @@ TEST_DECLARE   (tcp_ping_pong_v6)
 TEST_DECLARE   (pipe_ping_pong)
 TEST_DECLARE   (delayed_accept)
 TEST_DECLARE   (multiple_listen)
-#ifndef _WIN32
+
 TEST_DECLARE   (tcp_write_after_connect)
-#endif
+
 TEST_DECLARE   (tcp_writealot)
 TEST_DECLARE   (tcp_write_fail)
 TEST_DECLARE   (tcp_try_write)
@@ -96,10 +92,10 @@ TEST_DECLARE   (tcp_create_early)
 TEST_DECLARE   (tcp_create_early_bad_bind)
 TEST_DECLARE   (tcp_create_early_bad_domain)
 TEST_DECLARE   (tcp_create_early_accept)
-#ifndef _WIN32
+
 TEST_DECLARE   (tcp_close_accept)
 TEST_DECLARE   (tcp_oob)
-#endif
+
 TEST_DECLARE   (tcp_flags)
 TEST_DECLARE   (tcp_write_to_half_open_connection)
 TEST_DECLARE   (tcp_unexpected_read)
@@ -193,9 +189,9 @@ TEST_DECLARE   (pipe_ref)
 TEST_DECLARE   (pipe_ref2)
 TEST_DECLARE   (pipe_ref3)
 TEST_DECLARE   (pipe_ref4)
-#ifndef _WIN32
+
 TEST_DECLARE   (pipe_close_stdout_read_stdin)
-#endif
+
 TEST_DECLARE   (pipe_set_non_blocking)
 TEST_DECLARE   (process_ref)
 TEST_DECLARE   (has_ref)
@@ -227,9 +223,9 @@ TEST_DECLARE   (fail_always)
 TEST_DECLARE   (pass_always)
 TEST_DECLARE   (socket_buffer_size)
 TEST_DECLARE   (spawn_fails)
-#ifndef _WIN32
+
 TEST_DECLARE   (spawn_fails_check_for_waitpid_cleanup)
-#endif
+
 TEST_DECLARE   (spawn_exit_code)
 TEST_DECLARE   (spawn_stdout)
 TEST_DECLARE   (spawn_stdin)
@@ -283,9 +279,7 @@ TEST_DECLARE   (fs_event_watch_file)
 TEST_DECLARE   (fs_event_watch_file_exact_path)
 TEST_DECLARE   (fs_event_watch_file_twice)
 TEST_DECLARE   (fs_event_watch_file_current_dir)
-#ifdef _WIN32
-TEST_DECLARE   (fs_event_watch_file_root_dir)
-#endif
+
 TEST_DECLARE   (fs_event_no_callback_after_close)
 TEST_DECLARE   (fs_event_no_callback_on_close)
 TEST_DECLARE   (fs_event_immediate_close)
@@ -323,31 +317,15 @@ TEST_DECLARE   (poll_duplex)
 TEST_DECLARE   (poll_unidirectional)
 TEST_DECLARE   (poll_close)
 TEST_DECLARE   (poll_bad_fdtype)
-#ifdef __linux__
 TEST_DECLARE   (poll_nested_epoll)
-#endif
-#ifdef UV_HAVE_KQUEUE
-TEST_DECLARE   (poll_nested_kqueue)
-#endif
+
 
 TEST_DECLARE   (ip4_addr)
 TEST_DECLARE   (ip6_addr_link_local)
 
 TEST_DECLARE   (poll_close_doesnt_corrupt_stack)
 TEST_DECLARE   (poll_closesocket)
-#ifdef _WIN32
-TEST_DECLARE   (spawn_detect_pipe_name_collisions_on_windows)
-#if !defined(USING_UV_SHARED)
-TEST_DECLARE   (argument_escaping)
-TEST_DECLARE   (environment_creation)
-#endif
-TEST_DECLARE   (listen_with_simultaneous_accepts)
-TEST_DECLARE   (listen_no_simultaneous_accepts)
-TEST_DECLARE   (fs_stat_root)
-TEST_DECLARE   (spawn_with_an_odd_path)
-TEST_DECLARE   (ipc_listen_after_bind_twice)
-TEST_DECLARE   (win32_signum_number)
-#else
+
 TEST_DECLARE   (emfile)
 TEST_DECLARE   (close_fd)
 TEST_DECLARE   (spawn_fs_open)
@@ -356,11 +334,8 @@ TEST_DECLARE   (we_get_signal)
 TEST_DECLARE   (we_get_signals)
 TEST_DECLARE   (signal_multiple_loops)
 TEST_DECLARE   (closed_fd_events)
-#endif
-#ifdef __APPLE__
-TEST_DECLARE   (osx_select)
-TEST_DECLARE   (osx_select_many_fds)
-#endif
+
+
 HELPER_DECLARE (tcp4_echo_server)
 HELPER_DECLARE (tcp6_echo_server)
 HELPER_DECLARE (udp4_echo_server)
@@ -371,9 +346,7 @@ TEST_DECLARE   (queue_foreach_delete)
 TASK_LIST_START
   TEST_ENTRY_CUSTOM (platform_output, 0, 1, 5000)
 
-#if 0
-  TEST_ENTRY  (callback_order)
-#endif
+
   TEST_ENTRY  (close_order)
   TEST_ENTRY  (run_once)
   TEST_ENTRY  (run_nowait)
@@ -401,26 +374,22 @@ TASK_LIST_START
   TEST_ENTRY  (pipe_connect_on_prepare)
 
   TEST_ENTRY  (pipe_server_close)
-#ifndef _WIN32
+
   TEST_ENTRY  (pipe_close_stdout_read_stdin)
-#endif
+
   TEST_ENTRY  (pipe_set_non_blocking)
   TEST_ENTRY  (tty)
-#ifdef _WIN32
-  TEST_ENTRY  (tty_raw)
-  TEST_ENTRY  (tty_empty_write)
-  TEST_ENTRY  (tty_large_write)
-#endif
+
   TEST_ENTRY  (tty_file)
   TEST_ENTRY  (tty_pty)
   TEST_ENTRY  (stdio_over_pipes)
   TEST_ENTRY  (ip6_pton)
   TEST_ENTRY  (ipc_listen_before_write)
   TEST_ENTRY  (ipc_listen_after_write)
-#ifndef _WIN32
+
   TEST_ENTRY  (ipc_send_recv_pipe)
   TEST_ENTRY  (ipc_send_recv_pipe_inprocess)
-#endif
+
   TEST_ENTRY  (ipc_send_recv_tcp)
   TEST_ENTRY  (ipc_send_recv_tcp_inprocess)
   TEST_ENTRY  (ipc_tcp_connection)
@@ -439,10 +408,10 @@ TASK_LIST_START
   TEST_ENTRY  (delayed_accept)
   TEST_ENTRY  (multiple_listen)
 
-#ifndef _WIN32
-  TEST_ENTRY  (tcp_write_after_connect)
-#endif
 
+  TEST_ENTRY  (tcp_write_after_connect)
+
+  
   TEST_ENTRY  (tcp_writealot)
   TEST_HELPER (tcp_writealot, tcp4_echo_server)
 
@@ -477,10 +446,10 @@ TASK_LIST_START
   TEST_ENTRY  (tcp_create_early_bad_bind)
   TEST_ENTRY  (tcp_create_early_bad_domain)
   TEST_ENTRY  (tcp_create_early_accept)
-#ifndef _WIN32
+
   TEST_ENTRY  (tcp_close_accept)
   TEST_ENTRY  (tcp_oob)
-#endif
+
   TEST_ENTRY  (tcp_flags)
   TEST_ENTRY  (tcp_write_to_half_open_connection)
   TEST_ENTRY  (tcp_unexpected_read)
@@ -646,19 +615,16 @@ TASK_LIST_START
   TEST_ENTRY  (poll_unidirectional)
   TEST_ENTRY  (poll_close)
   TEST_ENTRY  (poll_bad_fdtype)
-#ifdef __linux__
-  TEST_ENTRY  (poll_nested_epoll)
-#endif
-#ifdef UV_HAVE_KQUEUE
-  TEST_ENTRY  (poll_nested_kqueue)
-#endif
 
+  TEST_ENTRY  (poll_nested_epoll)
+
+ 
   TEST_ENTRY  (socket_buffer_size)
 
   TEST_ENTRY  (spawn_fails)
-#ifndef _WIN32
+
   TEST_ENTRY  (spawn_fails_check_for_waitpid_cleanup)
-#endif
+
   TEST_ENTRY  (spawn_exit_code)
   TEST_ENTRY  (spawn_stdout)
   TEST_ENTRY  (spawn_stdin)
@@ -685,19 +651,7 @@ TASK_LIST_START
 
   TEST_ENTRY  (poll_close_doesnt_corrupt_stack)
   TEST_ENTRY  (poll_closesocket)
-#ifdef _WIN32
-  TEST_ENTRY  (spawn_detect_pipe_name_collisions_on_windows)
-#if !defined(USING_UV_SHARED)
-  TEST_ENTRY  (argument_escaping)
-  TEST_ENTRY  (environment_creation)
-# endif
-  TEST_ENTRY  (listen_with_simultaneous_accepts)
-  TEST_ENTRY  (listen_no_simultaneous_accepts)
-  TEST_ENTRY  (fs_stat_root)
-  TEST_ENTRY  (spawn_with_an_odd_path)
-  TEST_ENTRY  (ipc_listen_after_bind_twice)
-  TEST_ENTRY  (win32_signum_number)
-#else
+
   TEST_ENTRY  (emfile)
   TEST_ENTRY  (close_fd)
   TEST_ENTRY  (spawn_fs_open)
@@ -706,12 +660,6 @@ TASK_LIST_START
   TEST_ENTRY  (we_get_signals)
   TEST_ENTRY  (signal_multiple_loops)
   TEST_ENTRY  (closed_fd_events)
-#endif
-
-#ifdef __APPLE__
-  TEST_ENTRY (osx_select)
-  TEST_ENTRY (osx_select_many_fds)
-#endif
 
   TEST_ENTRY  (fs_file_noent)
   TEST_ENTRY  (fs_file_nametoolong)
@@ -742,9 +690,6 @@ TASK_LIST_START
   TEST_ENTRY  (fs_event_watch_file_exact_path)
   TEST_ENTRY  (fs_event_watch_file_twice)
   TEST_ENTRY  (fs_event_watch_file_current_dir)
-#ifdef _WIN32
-  TEST_ENTRY  (fs_event_watch_file_root_dir)
-#endif
   TEST_ENTRY  (fs_event_no_callback_after_close)
   TEST_ENTRY  (fs_event_no_callback_on_close)
   TEST_ENTRY  (fs_event_immediate_close)
@@ -764,14 +709,7 @@ TASK_LIST_START
   TEST_ENTRY  (fs_read_write_null_arguments)
   TEST_ENTRY  (threadpool_queue_work_simple)
   TEST_ENTRY  (threadpool_queue_work_einval)
-#if defined(__PPC__) || defined(__PPC64__)  /* For linux PPC and AIX */
-  /* pthread_join takes a while, especially on AIX.
-   * Therefore being gratuitous with timeout.
-   */
-  TEST_ENTRY_CUSTOM (threadpool_multiple_event_loops, 0, 0, 120000)
-#else
   TEST_ENTRY  (threadpool_multiple_event_loops)
-#endif
   TEST_ENTRY  (threadpool_cancel_getaddrinfo)
   TEST_ENTRY  (threadpool_cancel_getnameinfo)
   TEST_ENTRY  (threadpool_cancel_work)
@@ -790,9 +728,4 @@ TASK_LIST_START
 
   TEST_ENTRY  (queue_foreach_delete)
 
-#if 0
-  /* These are for testing the test runner. */
-  TEST_ENTRY  (fail_always)
-  TEST_ENTRY  (pass_always)
-#endif
 TASK_LIST_END

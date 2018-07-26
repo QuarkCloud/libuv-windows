@@ -21,25 +21,12 @@
 
 #include <errno.h>
 
-#ifdef _WIN32
-# include <fcntl.h>
-#else
 # include <sys/socket.h>
 # include <unistd.h>
-#endif
 
 #include "uv.h"
 #include "task.h"
-
-#ifdef __linux__
 # include <sys/epoll.h>
-#endif
-
-#ifdef UV_HAVE_KQUEUE
-# include <sys/types.h>
-# include <sys/event.h>
-# include <sys/time.h>
-#endif
 
 
 #define NUM_CLIENTS 5
@@ -82,21 +69,13 @@ static int closed_connections = 0;
 static int valid_writable_wakeups = 0;
 static int spurious_writable_wakeups = 0;
 
-#if !defined(_AIX) && !defined(__MVS__)
 static int disconnects = 0;
-#endif /* !_AIX  && !__MVS__ */
 
 static int got_eagain(void) {
-#ifdef _WIN32
-  return WSAGetLastError() == WSAEWOULDBLOCK;
-#else
   return errno == EAGAIN
       || errno == EINPROGRESS
-#ifdef EWOULDBLOCK
       || errno == EWOULDBLOCK;
-#endif
       ;
-#endif
 }
 
 
@@ -105,20 +84,14 @@ static uv_os_sock_t create_bound_socket (struct sockaddr_in bind_addr) {
   int r;
 
   sock = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
-#ifdef _WIN32
-  ASSERT(sock != INVALID_SOCKET);
-#else
   ASSERT(sock >= 0);
-#endif
 
-#ifndef _WIN32
   {
     /* Allow reuse of the port. */
     int yes = 1;
     r = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes);
     ASSERT(r == 0);
   }
-#endif
 
   r = bind(sock, (const struct sockaddr*) &bind_addr, sizeof bind_addr);
   ASSERT(r == 0);
@@ -129,11 +102,7 @@ static uv_os_sock_t create_bound_socket (struct sockaddr_in bind_addr) {
 
 static void close_socket(uv_os_sock_t sock) {
   int r;
-#ifdef _WIN32
-  r = closesocket(sock);
-#else
   r = close(sock);
-#endif
   ASSERT(r == 0);
 }
 
@@ -378,17 +347,12 @@ static void connection_poll_cb(uv_poll_t* handle, int status, int events) {
     } else {
       /* Nothing more to write. Send FIN. */
       int r;
-#ifdef _WIN32
-      r = shutdown(context->sock, SD_SEND);
-#else
       r = shutdown(context->sock, SHUT_WR);
-#endif
       ASSERT(r == 0);
       context->sent_fin = 1;
       new_events &= ~UV_WRITABLE;
     }
   }
-#if !defined(_AIX) && !defined(__MVS__)
   if (events & UV_DISCONNECT) {
     context->got_disconnect = 1;
     ++disconnects;
@@ -396,9 +360,6 @@ static void connection_poll_cb(uv_poll_t* handle, int status, int events) {
   }
 
   if (context->got_fin && context->sent_fin && context->got_disconnect) {
-#else /* _AIX  && __MVS__ */
-  if (context->got_fin && context->sent_fin) {
-#endif /* !_AIX && !__MVS__  */
     /* Sent and received FIN. Close and destroy context. */
     close_socket(context->sock);
     destroy_connection_context(context);
@@ -479,11 +440,7 @@ static void server_poll_cb(uv_poll_t* handle, int status, int events) {
 
   addr_len = sizeof addr;
   sock = accept(server_context->sock, (struct sockaddr*) &addr, &addr_len);
-#ifdef _WIN32
-  ASSERT(sock != INVALID_SOCKET);
-#else
   ASSERT(sock >= 0);
-#endif
 
   connection_context = create_connection_context(sock, 1);
   connection_context->events = UV_READABLE | UV_WRITABLE | UV_DISCONNECT;
@@ -544,14 +501,6 @@ static void start_client(void) {
 static void start_poll_test(void) {
   int i, r;
 
-#ifdef _WIN32
-  {
-    struct WSAData wsa_data;
-    int r = WSAStartup(MAKEWORD(2, 2), &wsa_data);
-    ASSERT(r == 0);
-  }
-#endif
-
   start_server();
 
   for (i = 0; i < NUM_CLIENTS; i++)
@@ -566,9 +515,7 @@ static void start_poll_test(void) {
          spurious_writable_wakeups > 20);
 
   ASSERT(closed_connections == NUM_CLIENTS * 2);
-#if !defined(_AIX) && !defined(__MVS__)
   ASSERT(disconnects == NUM_CLIENTS * 2);
-#endif
   MAKE_VALGRIND_HAPPY();
 }
 
@@ -593,21 +540,13 @@ TEST_IMPL(poll_unidirectional) {
  * on FreeBSD, Solaris and AIX so skip the test on those platforms.
  */
 TEST_IMPL(poll_bad_fdtype) {
-#if !defined(__DragonFly__) && !defined(__FreeBSD__) && !defined(__sun) && \
-    !defined(_AIX) && !defined(__MVS__) && !defined(__FreeBSD_kernel__) && \
-    !defined(__OpenBSD__)
   uv_poll_t poll_handle;
   int fd;
 
-#if defined(_WIN32)
-  fd = open("test/fixtures/empty_file", O_RDONLY);
-#else
   fd = open(".", O_RDONLY);
-#endif
   ASSERT(fd != -1);
   ASSERT(0 != uv_poll_init(uv_default_loop(), &poll_handle, fd));
   ASSERT(0 == close(fd));
-#endif
 
   MAKE_VALGRIND_HAPPY();
   return 0;
@@ -635,24 +574,3 @@ TEST_IMPL(poll_nested_epoll) {
 }
 #endif  /* __linux__ */
 
-
-#ifdef UV_HAVE_KQUEUE
-TEST_IMPL(poll_nested_kqueue) {
-  uv_poll_t poll_handle;
-  int fd;
-
-  fd = kqueue();
-  ASSERT(fd != -1);
-
-  ASSERT(0 == uv_poll_init(uv_default_loop(), &poll_handle, fd));
-  ASSERT(0 == uv_poll_start(&poll_handle, UV_READABLE, (uv_poll_cb) abort));
-  ASSERT(0 != uv_run(uv_default_loop(), UV_RUN_NOWAIT));
-
-  uv_close((uv_handle_t*) &poll_handle, NULL);
-  ASSERT(0 == uv_run(uv_default_loop(), UV_RUN_DEFAULT));
-  ASSERT(0 == close(fd));
-
-  MAKE_VALGRIND_HAPPY();
-  return 0;
-}
-#endif  /* UV_HAVE_KQUEUE */

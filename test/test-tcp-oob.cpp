@@ -19,8 +19,6 @@
  * IN THE SOFTWARE.
  */
 
-#if !defined(_WIN32)
-
 #include "uv.h"
 #include "task.h"
 
@@ -125,4 +123,3 @@ TEST_IMPL(tcp_oob) {
   MAKE_VALGRIND_HAPPY();
   return 0;
 }
-#endif

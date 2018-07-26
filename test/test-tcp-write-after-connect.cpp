@@ -19,8 +19,6 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef _WIN32
-
 #include "uv.h"
 #include "task.h"
 
@@ -64,5 +62,3 @@ TEST_IMPL(tcp_write_after_connect) {
   MAKE_VALGRIND_HAPPY();
   return 0;
 }
-
-#endif

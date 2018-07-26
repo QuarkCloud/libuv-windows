@@ -28,24 +28,8 @@
 #include <sys/stat.h>
 
 /* FIXME we shouldn't need to branch in this file */
-#if defined(__unix__) || defined(__POSIX__) || \
-    defined(__APPLE__) || defined(_AIX) || defined(__MVS__)
 #include <unistd.h> /* unlink, rmdir, etc. */
-#else
-# include <direct.h>
-# include <io.h>
-# define unlink _unlink
-# define rmdir _rmdir
-# define open _open
-# define write _write
-# define close _close
-# ifndef stat
-#  define stat _stati64
-# endif
-# ifndef lseek
-#   define lseek _lseek
-# endif
-#endif
+
 
 #define TOO_LONG_NAME_LENGTH 65536
 #define PATHMAX 1024
@@ -125,15 +109,7 @@ static void check_permission(const char* filename, unsigned int mode) {
   ASSERT(req.result == 0);
 
   s = &req.statbuf;
-#ifdef _WIN32
-  /*
-   * On Windows, chmod can only modify S_IWUSR (_S_IWRITE) bit,
-   * so only testing for the specified flags.
-   */
-  ASSERT((s->st_mode & 0777) & mode);
-#else
   ASSERT((s->st_mode & 0777) == mode);
-#endif
 
   uv_fs_req_cleanup(&req);
 }
@@ -173,26 +149,12 @@ static void realpath_cb(uv_fs_t* req) {
   char test_file_abs_buf[PATHMAX];
   size_t test_file_abs_size = sizeof(test_file_abs_buf);
   ASSERT(req->fs_type == UV_FS_REALPATH);
-#ifdef _WIN32
-  /*
-   * Windows XP and Server 2003 don't support GetFinalPathNameByHandleW()
-   */
-  if (req->result == UV_ENOSYS) {
-    realpath_cb_count++;
-    uv_fs_req_cleanup(req);
-    return;
-  }
-#endif
+
   ASSERT(req->result == 0);
 
   uv_cwd(test_file_abs_buf, &test_file_abs_size);
-#ifdef _WIN32
-  strcat(test_file_abs_buf, "\\test_file");
-  ASSERT(stricmp(req->ptr, test_file_abs_buf) == 0);
-#else
   strcat(test_file_abs_buf, "/test_file");
   ASSERT(strcmp(req->ptr, test_file_abs_buf) == 0);
-#endif
   realpath_cb_count++;
   uv_fs_req_cleanup(req);
 }
@@ -240,10 +202,6 @@ static void chown_cb(uv_fs_t* req) {
 
 static void chown_root_cb(uv_fs_t* req) {
   ASSERT(req->fs_type == UV_FS_CHOWN);
-#ifdef _WIN32
-  /* On windows, chown is a no-op and always succeeds. */
-  ASSERT(req->result == 0);
-#else
   /* On unix, chown'ing the root directory is not allowed -
    * unless you're root, of course.
    */
@@ -251,7 +209,6 @@ static void chown_root_cb(uv_fs_t* req) {
     ASSERT(req->result == 0);
   else
     ASSERT(req->result == UV_EPERM);
-#endif
   chown_cb_count++;
   uv_fs_req_cleanup(req);
 }
@@ -458,7 +415,6 @@ static void rmdir_cb(uv_fs_t* req) {
 
 
 static void assert_is_file_type(uv_dirent_t dent) {
-#ifdef HAVE_DIRENT_TYPES
   /*
    * For Apple and Windows, we know getdents is expected to work but for other
    * environments, the filesystem dictates whether or not getdents supports
@@ -468,14 +424,7 @@ static void assert_is_file_type(uv_dirent_t dent) {
    *     http://man7.org/linux/man-pages/man2/getdents.2.html
    *     https://github.com/libuv/libuv/issues/501
    */
-  #if defined(__APPLE__) || defined(_WIN32)
-    ASSERT(dent.type == UV_DIRENT_FILE);
-  #else
     ASSERT(dent.type == UV_DIRENT_FILE || dent.type == UV_DIRENT_UNKNOWN);
-  #endif
-#else
-  ASSERT(dent.type == UV_DIRENT_UNKNOWN);
-#endif
 }
 
 
@@ -633,15 +582,7 @@ TEST_IMPL(fs_file_loop) {
 
   unlink("test_symlink");
   r = uv_fs_symlink(NULL, &req, "test_symlink", "test_symlink", 0, NULL);
-#ifdef _WIN32
-  /*
-   * Windows XP and Server 2003 don't support symlinks; we'll get UV_ENOTSUP.
-   * Starting with vista they are supported, but only when elevated, otherwise
-   * we'll see UV_EPERM.
-   */
-  if (r == UV_ENOTSUP || r == UV_EPERM)
-    return 0;
-#endif
+
   ASSERT(r == 0);
   uv_fs_req_cleanup(&req);
 
@@ -1086,9 +1027,7 @@ TEST_IMPL(fs_fstat) {
   uv_fs_t req;
   uv_file file;
   uv_stat_t* s;
-#ifndef _WIN32
   struct stat t;
-#endif
 
   /* Setup. */
   unlink("test_file");
@@ -1114,7 +1053,6 @@ TEST_IMPL(fs_fstat) {
   s = req.ptr;
   ASSERT(s->st_size == sizeof(test_buf));
 
-#ifndef _WIN32
   r = fstat(file, &t);
   ASSERT(r == 0);
 
@@ -1128,63 +1066,13 @@ TEST_IMPL(fs_fstat) {
   ASSERT(s->st_size == (uint64_t) t.st_size);
   ASSERT(s->st_blksize == (uint64_t) t.st_blksize);
   ASSERT(s->st_blocks == (uint64_t) t.st_blocks);
-#if defined(__APPLE__)
-  ASSERT(s->st_atim.tv_sec == t.st_atimespec.tv_sec);
-  ASSERT(s->st_atim.tv_nsec == t.st_atimespec.tv_nsec);
-  ASSERT(s->st_mtim.tv_sec == t.st_mtimespec.tv_sec);
-  ASSERT(s->st_mtim.tv_nsec == t.st_mtimespec.tv_nsec);
-  ASSERT(s->st_ctim.tv_sec == t.st_ctimespec.tv_sec);
-  ASSERT(s->st_ctim.tv_nsec == t.st_ctimespec.tv_nsec);
-  ASSERT(s->st_birthtim.tv_sec == t.st_birthtimespec.tv_sec);
-  ASSERT(s->st_birthtim.tv_nsec == t.st_birthtimespec.tv_nsec);
-  ASSERT(s->st_flags == t.st_flags);
-  ASSERT(s->st_gen == t.st_gen);
-#elif defined(_AIX)
-  ASSERT(s->st_atim.tv_sec == t.st_atime);
-  ASSERT(s->st_atim.tv_nsec == 0);
-  ASSERT(s->st_mtim.tv_sec == t.st_mtime);
-  ASSERT(s->st_mtim.tv_nsec == 0);
-  ASSERT(s->st_ctim.tv_sec == t.st_ctime);
-  ASSERT(s->st_ctim.tv_nsec == 0);
-#elif defined(__ANDROID__)
-  ASSERT(s->st_atim.tv_sec == t.st_atime);
-  ASSERT(s->st_atim.tv_nsec == t.st_atimensec);
-  ASSERT(s->st_mtim.tv_sec == t.st_mtime);
-  ASSERT(s->st_mtim.tv_nsec == t.st_mtimensec);
-  ASSERT(s->st_ctim.tv_sec == t.st_ctime);
-  ASSERT(s->st_ctim.tv_nsec == t.st_ctimensec);
-#elif defined(__sun)           || \
-      defined(__DragonFly__)   || \
-      defined(__FreeBSD__)     || \
-      defined(__OpenBSD__)     || \
-      defined(__NetBSD__)      || \
-      defined(_GNU_SOURCE)     || \
-      defined(_BSD_SOURCE)     || \
-      defined(_SVID_SOURCE)    || \
-      defined(_XOPEN_SOURCE)   || \
-      defined(_DEFAULT_SOURCE)
+
   ASSERT(s->st_atim.tv_sec == t.st_atim.tv_sec);
   ASSERT(s->st_atim.tv_nsec == t.st_atim.tv_nsec);
   ASSERT(s->st_mtim.tv_sec == t.st_mtim.tv_sec);
   ASSERT(s->st_mtim.tv_nsec == t.st_mtim.tv_nsec);
   ASSERT(s->st_ctim.tv_sec == t.st_ctim.tv_sec);
   ASSERT(s->st_ctim.tv_nsec == t.st_ctim.tv_nsec);
-# if defined(__FreeBSD__)    || \
-     defined(__NetBSD__)
-  ASSERT(s->st_birthtim.tv_sec == t.st_birthtim.tv_sec);
-  ASSERT(s->st_birthtim.tv_nsec == t.st_birthtim.tv_nsec);
-  ASSERT(s->st_flags == t.st_flags);
-  ASSERT(s->st_gen == t.st_gen);
-# endif
-#else
-  ASSERT(s->st_atim.tv_sec == t.st_atime);
-  ASSERT(s->st_atim.tv_nsec == 0);
-  ASSERT(s->st_mtim.tv_sec == t.st_mtime);
-  ASSERT(s->st_mtim.tv_nsec == 0);
-  ASSERT(s->st_ctim.tv_sec == t.st_ctime);
-  ASSERT(s->st_ctim.tv_nsec == 0);
-#endif
-#endif
 
   uv_fs_req_cleanup(&req);
 
@@ -1313,7 +1201,6 @@ TEST_IMPL(fs_chmod) {
   ASSERT(req.result == sizeof(test_buf));
   uv_fs_req_cleanup(&req);
 
-#ifndef _WIN32
   /* Make the file write-only */
   r = uv_fs_chmod(NULL, &req, "test_file", 0200, NULL);
   ASSERT(r == 0);
@@ -1321,7 +1208,6 @@ TEST_IMPL(fs_chmod) {
   uv_fs_req_cleanup(&req);
 
   check_permission("test_file", 0200);
-#endif
 
   /* Make the file read-only */
   r = uv_fs_chmod(NULL, &req, "test_file", 0400, NULL);
@@ -1339,7 +1225,6 @@ TEST_IMPL(fs_chmod) {
 
   check_permission("test_file", 0600);
 
-#ifndef _WIN32
   /* async chmod */
   {
     static int mode = 0200;
@@ -1350,7 +1235,6 @@ TEST_IMPL(fs_chmod) {
   uv_run(loop, UV_RUN_DEFAULT);
   ASSERT(chmod_cb_count == 1);
   chmod_cb_count = 0; /* reset for the next test */
-#endif
 
   /* async chmod */
   {
@@ -1625,15 +1509,7 @@ TEST_IMPL(fs_realpath) {
   ASSERT(0 == uv_run(loop, UV_RUN_DEFAULT));
   ASSERT(dummy_cb_count == 1);
   ASSERT(req.ptr == NULL);
-#ifdef _WIN32
-  /*
-   * Windows XP and Server 2003 don't support GetFinalPathNameByHandleW()
-   */
-  if (req.result == UV_ENOSYS) {
-    uv_fs_req_cleanup(&req);
-    RETURN_SKIP("realpath is not supported on Windows XP");
-  }
-#endif
+
   ASSERT(req.result == UV_ENOENT);
   uv_fs_req_cleanup(&req);
 
@@ -1662,13 +1538,8 @@ TEST_IMPL(fs_symlink) {
   unlink("test_file_symlink_symlink");
   unlink("test_file_symlink2_symlink");
   test_file_abs_size = sizeof(test_file_abs_buf);
-#ifdef _WIN32
-  uv_cwd(test_file_abs_buf, &test_file_abs_size);
-  strcat(test_file_abs_buf, "\\test_file");
-#else
   uv_cwd(test_file_abs_buf, &test_file_abs_size);
   strcat(test_file_abs_buf, "/test_file");
-#endif
 
   loop = uv_default_loop();
 
@@ -1689,23 +1560,7 @@ TEST_IMPL(fs_symlink) {
 
   /* sync symlink */
   r = uv_fs_symlink(NULL, &req, "test_file", "test_file_symlink", 0, NULL);
-#ifdef _WIN32
-  if (r < 0) {
-    if (r == UV_ENOTSUP) {
-      /*
-       * Windows doesn't support symlinks on older versions.
-       * We just pass the test and bail out early if we get ENOTSUP.
-       */
-      return 0;
-    } else if (r == UV_EPERM) {
-      /*
-       * Creating a symlink is only allowed when running elevated.
-       * We pass the test and bail out early if we get UV_EPERM.
-       */
-      return 0;
-    }
-  }
-#endif
+
   ASSERT(r == 0);
   ASSERT(req.result == 0);
   uv_fs_req_cleanup(&req);
@@ -1740,21 +1595,9 @@ TEST_IMPL(fs_symlink) {
   uv_fs_req_cleanup(&req);
 
   r = uv_fs_realpath(NULL, &req, "test_file_symlink_symlink", NULL);
-#ifdef _WIN32
-  /*
-   * Windows XP and Server 2003 don't support GetFinalPathNameByHandleW()
-   */
-  if (r == UV_ENOSYS) {
-    uv_fs_req_cleanup(&req);
-    RETURN_SKIP("realpath is not supported on Windows XP");
-  }
-#endif
+
   ASSERT(r == 0);
-#ifdef _WIN32
-  ASSERT(stricmp(req.ptr, test_file_abs_buf) == 0);
-#else
   ASSERT(strcmp(req.ptr, test_file_abs_buf) == 0);
-#endif
   uv_fs_req_cleanup(&req);
 
   /* async link */
@@ -1798,15 +1641,7 @@ TEST_IMPL(fs_symlink) {
   ASSERT(readlink_cb_count == 1);
 
   r = uv_fs_realpath(loop, &req, "test_file", realpath_cb);
-#ifdef _WIN32
-  /*
-   * Windows XP and Server 2003 don't support GetFinalPathNameByHandleW()
-   */
-  if (r == UV_ENOSYS) {
-    uv_fs_req_cleanup(&req);
-    RETURN_SKIP("realpath is not supported on Windows XP");
-  }
-#endif
+
   ASSERT(r == 0);
   uv_run(loop, UV_RUN_DEFAULT);
   ASSERT(realpath_cb_count == 1);
@@ -1849,19 +1684,10 @@ TEST_IMPL(fs_symlink_dir) {
   uv_fs_mkdir(NULL, &req, "test_dir", 0777, NULL);
   uv_fs_req_cleanup(&req);
 
-#ifdef _WIN32
-  strcpy(test_dir_abs_buf, "\\\\?\\");
-  uv_cwd(test_dir_abs_buf + 4, &test_dir_abs_size);
-  test_dir_abs_size += 4;
-  strcat(test_dir_abs_buf, "\\test_dir\\");
-  test_dir_abs_size += strlen("\\test_dir\\");
-  test_dir = test_dir_abs_buf;
-#else
   uv_cwd(test_dir_abs_buf, &test_dir_abs_size);
   strcat(test_dir_abs_buf, "/test_dir");
   test_dir_abs_size += strlen("/test_dir");
   test_dir = "test_dir";
-#endif
 
   r = uv_fs_symlink(NULL, &req, test_dir, "test_dir_symlink",
     UV_FS_SYMLINK_JUNCTION, NULL);
@@ -1878,39 +1704,21 @@ TEST_IMPL(fs_symlink_dir) {
   r = uv_fs_lstat(NULL, &req, "test_dir_symlink", NULL);
   ASSERT(r == 0);
   ASSERT(((uv_stat_t*)req.ptr)->st_mode & S_IFLNK);
-#ifdef _WIN32
-  ASSERT(((uv_stat_t*)req.ptr)->st_size == strlen(test_dir + 4));
-#else
+
   ASSERT(((uv_stat_t*)req.ptr)->st_size == strlen(test_dir));
-#endif
+
   uv_fs_req_cleanup(&req);
 
   r = uv_fs_readlink(NULL, &req, "test_dir_symlink", NULL);
   ASSERT(r == 0);
-#ifdef _WIN32
-  ASSERT(strcmp(req.ptr, test_dir + 4) == 0);
-#else
+
   ASSERT(strcmp(req.ptr, test_dir) == 0);
-#endif
   uv_fs_req_cleanup(&req);
 
   r = uv_fs_realpath(NULL, &req, "test_dir_symlink", NULL);
-#ifdef _WIN32
-  /*
-   * Windows XP and Server 2003 don't support GetFinalPathNameByHandleW()
-   */
-  if (r == UV_ENOSYS) {
-    uv_fs_req_cleanup(&req);
-    RETURN_SKIP("realpath is not supported on Windows XP");
-  }
-#endif
+
   ASSERT(r == 0);
-#ifdef _WIN32
-  ASSERT(strlen(req.ptr) == test_dir_abs_size - 5);
-  ASSERT(strnicmp(req.ptr, test_dir + 4, test_dir_abs_size - 5) == 0);
-#else
   ASSERT(strcmp(req.ptr, test_dir_abs_buf) == 0);
-#endif
   uv_fs_req_cleanup(&req);
 
   r = uv_fs_open(NULL, &open_req1, "test_dir/file1", O_WRONLY | O_CREAT,
@@ -1995,9 +1803,6 @@ TEST_IMPL(fs_utime) {
    * platforms support sub-second timestamps, but that support is filesystem-
    * dependent. Notably OS X (HFS Plus) does NOT support sub-second timestamps.
    */
-#ifdef _WIN32
-  mtime += 0.444;            /* 1982-09-10 11:22:33.444 */
-#endif
 
   r = uv_fs_utime(NULL, &req, path, atime, mtime, NULL);
   ASSERT(r == 0);
@@ -2030,43 +1835,9 @@ TEST_IMPL(fs_utime) {
 }
 
 
-#ifdef _WIN32
-TEST_IMPL(fs_stat_root) {
-  int r;
-  uv_loop_t* loop = uv_default_loop();
 
-  r = uv_fs_stat(NULL, &stat_req, "\\", NULL);
-  ASSERT(r == 0);
-
-  r = uv_fs_stat(NULL, &stat_req, "..\\..\\..\\..\\..\\..\\..", NULL);
-  ASSERT(r == 0);
-
-  r = uv_fs_stat(NULL, &stat_req, "..", NULL);
-  ASSERT(r == 0);
-
-  r = uv_fs_stat(NULL, &stat_req, "..\\", NULL);
-  ASSERT(r == 0);
-
-  /* stats the current directory on c: */
-  r = uv_fs_stat(NULL, &stat_req, "c:", NULL);
-  ASSERT(r == 0);
-
-  r = uv_fs_stat(NULL, &stat_req, "c:\\", NULL);
-  ASSERT(r == 0);
-
-  r = uv_fs_stat(NULL, &stat_req, "\\\\?\\C:\\", NULL);
-  ASSERT(r == 0);
-
-  MAKE_VALGRIND_HAPPY();
-  return 0;
-}
-#endif
-
-
-TEST_IMPL(fs_futime) {
-#if defined(_AIX) && !defined(_AIX71)
-  RETURN_SKIP("futime is not implemented for AIX versions below 7.1");
-#else
+TEST_IMPL(fs_futime)
+{
   utime_check_t checkme;
   const char* path = "test_file";
   double atime;
@@ -2091,9 +1862,6 @@ TEST_IMPL(fs_futime) {
    * platforms support sub-second timestamps, but that support is filesystem-
    * dependent. Notably OS X (HFS Plus) does NOT support sub-second timestamps.
    */
-#ifdef _WIN32
-  mtime += 0.444;            /* 1982-09-10 11:22:33.444 */
-#endif
 
   r = uv_fs_open(NULL, &req, path, O_RDWR, 0, NULL);
   ASSERT(r >= 0);
@@ -2130,7 +1898,6 @@ TEST_IMPL(fs_futime) {
 
   MAKE_VALGRIND_HAPPY();
   return 0;
-#endif
 }
 
 

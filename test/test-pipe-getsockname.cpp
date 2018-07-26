@@ -25,16 +25,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if defined(__linux__)
-  #include <sys/socket.h>
-  #include <sys/un.h>
-#endif
-
-#ifndef _WIN32
+#include <sys/socket.h>
+#include <sys/un.h>
 # include <unistd.h>  /* close */
-#else
-# include <fcntl.h>
-#endif
 
 static uv_pipe_t pipe_client;
 static uv_pipe_t pipe_server;
@@ -206,58 +199,6 @@ TEST_IMPL(pipe_getsockname_abstract) {
 }
 
 TEST_IMPL(pipe_getsockname_blocking) {
-#ifdef _WIN32
-  HANDLE readh, writeh;
-  int readfd;
-  char buf1[1024], buf2[1024];
-  size_t len1, len2;
-  int r;
-
-  r = CreatePipe(&readh, &writeh, NULL, 65536);
-  ASSERT(r != 0);
-
-  r = uv_pipe_init(uv_default_loop(), &pipe_client, 0);
-  ASSERT(r == 0);
-  readfd = _open_osfhandle((intptr_t)readh, _O_RDONLY);
-  ASSERT(r != -1);
-  r = uv_pipe_open(&pipe_client, readfd);
-  ASSERT(r == 0);
-  r = uv_read_start((uv_stream_t*)&pipe_client, NULL, NULL);
-  ASSERT(r == 0);
-  Sleep(100);
-  r = uv_read_stop((uv_stream_t*)&pipe_client);
-  ASSERT(r == 0);
-
-  len1 = sizeof buf1;
-  r = uv_pipe_getsockname(&pipe_client, buf1, &len1);
-  ASSERT(r == 0);
-  ASSERT(len1 == 0);  /* It's an annonymous pipe. */
-
-  r = uv_read_start((uv_stream_t*)&pipe_client, NULL, NULL);
-  ASSERT(r == 0);
-  Sleep(100);
-
-  len2 = sizeof buf2;
-  r = uv_pipe_getsockname(&pipe_client, buf2, &len2);
-  ASSERT(r == 0);
-  ASSERT(len2 == 0);  /* It's an annonymous pipe. */
-
-  r = uv_read_stop((uv_stream_t*)&pipe_client);
-  ASSERT(r == 0);
-
-  ASSERT(len1 == len2);
-  ASSERT(memcmp(buf1, buf2, len1) == 0);
-
-  pipe_close_cb_called = 0;
-  uv_close((uv_handle_t*)&pipe_client, pipe_close_cb);
-
-  uv_run(uv_default_loop(), UV_RUN_DEFAULT);
-
-  ASSERT(pipe_close_cb_called == 1);
-
-  CloseHandle(writeh);
-#endif
-
   MAKE_VALGRIND_HAPPY();
   return 0;
 }

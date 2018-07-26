@@ -21,7 +21,6 @@
 
 
 /* This test does not pretend to be cross-platform. */
-#ifndef _WIN32
 
 #include "uv.h"
 #include "task.h"
@@ -287,4 +286,3 @@ TEST_IMPL(signal_multiple_loops) {
   return 0;
 }
 
-#endif  /* !_WIN32 */

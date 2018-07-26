@@ -19,8 +19,6 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef _WIN32
-
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -104,4 +102,3 @@ TEST_IMPL(pipe_close_stdout_read_stdin) {
   return 0;
 }
 
-#endif /* ifndef _WIN32 */

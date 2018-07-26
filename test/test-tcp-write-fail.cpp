@@ -23,9 +23,7 @@
 #include "task.h"
 #include <stdio.h>
 #include <stdlib.h>
-#ifndef _WIN32
-# include <unistd.h>
-#endif
+#include <unistd.h>
 
 
 static int connect_cb_called = 0;
@@ -42,11 +40,7 @@ static void close_socket(uv_tcp_t* sock) {
 
   r = uv_fileno((uv_handle_t*)sock, &fd);
   ASSERT(r == 0);
-#ifdef _WIN32
-  r = closesocket((uv_os_sock_t)fd);
-#else
   r = close(fd);
-#endif
   ASSERT(r == 0);
 }
 

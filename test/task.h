@@ -130,8 +130,6 @@ enum test_status {
     return TEST_SKIP;                                                         \
   } while (0)
 
-#if !defined(_WIN32)
-
 # define TEST_FILE_LIMIT(num)                                                 \
     do {                                                                      \
       struct rlimit lim;                                                      \
@@ -141,37 +139,22 @@ enum test_status {
         RETURN_SKIP("File descriptor limit too low.");                        \
     } while (0)
 
-#else  /* defined(_WIN32) */
-
-# define TEST_FILE_LIMIT(num) do {} while (0)
-
-#endif
-
-#if !defined(snprintf) && defined(_MSC_VER) && _MSC_VER < 1900
-extern int snprintf(char*, size_t, const char*, ...);
-#endif
-
-#if defined(__clang__) ||                                \
-    defined(__GNUC__) ||                                 \
-    defined(__INTEL_COMPILER) ||                         \
-    defined(__SUNPRO_C)
-# define UNUSED __attribute__((unused))
-#else
-# define UNUSED
-#endif
 
 /* Fully close a loop */
-static void close_walk_cb(uv_handle_t* handle, void* arg) {
+static void close_walk_cb(uv_handle_t* handle, void* arg)
+{
   if (!uv_is_closing(handle))
     uv_close(handle, NULL);
 }
 
-UNUSED static void close_loop(uv_loop_t* loop) {
+static void close_loop(uv_loop_t* loop)
+{
   uv_walk(loop, close_walk_cb, NULL);
   uv_run(loop, UV_RUN_DEFAULT);
 }
 
-UNUSED static int can_ipv6(void) {
+static int can_ipv6(void) 
+{
   uv_interface_address_t* addr;
   int supported;
   int count;

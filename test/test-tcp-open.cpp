@@ -24,10 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#ifndef _WIN32
-# include <unistd.h>
-#endif
+#include <unistd.h>
 
 static int shutdown_cb_called = 0;
 static int connect_cb_called = 0;
@@ -40,11 +37,6 @@ static uv_write_t write_req;
 
 
 static void startup(void) {
-#ifdef _WIN32
-    struct WSAData wsa_data;
-    int r = WSAStartup(MAKEWORD(2, 2), &wsa_data);
-    ASSERT(r == 0);
-#endif
 }
 
 
@@ -52,20 +44,14 @@ static uv_os_sock_t create_tcp_socket(void) {
   uv_os_sock_t sock;
 
   sock = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
-#ifdef _WIN32
-  ASSERT(sock != INVALID_SOCKET);
-#else
   ASSERT(sock >= 0);
-#endif
 
-#ifndef _WIN32
   {
     /* Allow reuse of the port. */
     int yes = 1;
     int r = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes);
     ASSERT(r == 0);
   }
-#endif
 
   return sock;
 }
@@ -73,11 +59,7 @@ static uv_os_sock_t create_tcp_socket(void) {
 
 static void close_socket(uv_os_sock_t sock) {
   int r;
-#ifdef _WIN32
-  r = closesocket(sock);
-#else
   r = close(sock);
-#endif
   ASSERT(r == 0);
 }
 

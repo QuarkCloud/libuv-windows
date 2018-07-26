@@ -205,71 +205,6 @@ static void on_read(uv_stream_t* handle,
   free(buf->base);
 }
 
-#ifdef _WIN32
-static void on_read_listen_after_bound_twice(uv_stream_t* handle,
-                                             ssize_t nread,
-                                             const uv_buf_t* buf) {
-  int r;
-  uv_pipe_t* pipe;
-  uv_handle_type pending;
-
-  pipe = (uv_pipe_t*) handle;
-
-  if (nread == 0) {
-    /* Everything OK, but nothing read. */
-    free(buf->base);
-    return;
-  }
-
-  if (nread < 0) {
-    if (nread == UV_EOF) {
-      free(buf->base);
-      return;
-    }
-
-    printf("error recving on channel: %s\n", uv_strerror(nread));
-    abort();
-  }
-
-  fprintf(stderr, "got %d bytes\n", (int)nread);
-
-  ASSERT(uv_pipe_pending_count(pipe) > 0);
-  pending = uv_pipe_pending_type(pipe);
-  ASSERT(nread > 0 && buf->base && pending != UV_UNKNOWN_HANDLE);
-  read_cb_called++;
-
-  if (read_cb_called == 1) {
-    /* Accept the first TCP server, and start listening on it. */
-    ASSERT(pending == UV_TCP);
-    r = uv_tcp_init(uv_default_loop(), &tcp_server);
-    ASSERT(r == 0);
-
-    r = uv_accept((uv_stream_t*)pipe, (uv_stream_t*)&tcp_server);
-    ASSERT(r == 0);
-
-    r = uv_listen((uv_stream_t*)&tcp_server, BACKLOG, on_connection);
-    ASSERT(r == 0);
-  } else if (read_cb_called == 2) {
-    /* Accept the second TCP server, and start listening on it. */
-    ASSERT(pending == UV_TCP);
-    r = uv_tcp_init(uv_default_loop(), &tcp_server2);
-    ASSERT(r == 0);
-
-    r = uv_accept((uv_stream_t*)pipe, (uv_stream_t*)&tcp_server2);
-    ASSERT(r == 0);
-
-    r = uv_listen((uv_stream_t*)&tcp_server2, BACKLOG, on_connection);
-    ASSERT(r == UV_EADDRINUSE);
-
-    uv_close((uv_handle_t*)&tcp_server, NULL);
-    uv_close((uv_handle_t*)&tcp_server2, NULL);
-    ASSERT(0 == uv_pipe_pending_count(pipe));
-    uv_close((uv_handle_t*)&channel, NULL);
-  }
-
-  free(buf->base);
-}
-#endif
 
 void spawn_helper(uv_pipe_t* channel,
                   uv_process_t* process,
@@ -438,65 +373,6 @@ TEST_IMPL(ipc_tcp_connection) {
   ASSERT(exit_cb_called == 1);
   return r;
 }
-
-
-#ifdef _WIN32
-TEST_IMPL(listen_with_simultaneous_accepts) {
-  uv_tcp_t server;
-  int r;
-  struct sockaddr_in addr;
-
-  ASSERT(0 == uv_ip4_addr("0.0.0.0", TEST_PORT, &addr));
-
-  r = uv_tcp_init(uv_default_loop(), &server);
-  ASSERT(r == 0);
-
-  r = uv_tcp_bind(&server, (const struct sockaddr*) &addr, 0);
-  ASSERT(r == 0);
-
-  r = uv_tcp_simultaneous_accepts(&server, 1);
-  ASSERT(r == 0);
-
-  r = uv_listen((uv_stream_t*)&server, SOMAXCONN, NULL);
-  ASSERT(r == 0);
-  ASSERT(server.reqs_pending == 32);
-
-  MAKE_VALGRIND_HAPPY();
-  return 0;
-}
-
-
-TEST_IMPL(listen_no_simultaneous_accepts) {
-  uv_tcp_t server;
-  int r;
-  struct sockaddr_in addr;
-
-  ASSERT(0 == uv_ip4_addr("0.0.0.0", TEST_PORT, &addr));
-
-  r = uv_tcp_init(uv_default_loop(), &server);
-  ASSERT(r == 0);
-
-  r = uv_tcp_bind(&server, (const struct sockaddr*) &addr, 0);
-  ASSERT(r == 0);
-
-  r = uv_tcp_simultaneous_accepts(&server, 0);
-  ASSERT(r == 0);
-
-  r = uv_listen((uv_stream_t*)&server, SOMAXCONN, NULL);
-  ASSERT(r == 0);
-  ASSERT(server.reqs_pending == 1);
-
-  MAKE_VALGRIND_HAPPY();
-  return 0;
-}
-
-TEST_IMPL(ipc_listen_after_bind_twice) {
-  int r = run_ipc_test("ipc_helper_bind_twice", on_read_listen_after_bound_twice);
-  ASSERT(read_cb_called == 2);
-  ASSERT(exit_cb_called == 1);
-  return r;
-}
-#endif
 
 
 /* Everything here runs in a child process. */

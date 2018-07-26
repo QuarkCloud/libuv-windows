@@ -41,17 +41,10 @@ TEST_IMPL(homedir) {
   ASSERT(len > 0);
   ASSERT(homedir[len] == '\0');
 
-#ifdef _WIN32
-  if (len == 3 && homedir[1] == ':')
-    ASSERT(homedir[2] == '\\');
-  else
-    ASSERT(homedir[len - 1] != '\\');
-#else
   if (len == 1)
     ASSERT(homedir[0] == '/');
   else
     ASSERT(homedir[len - 1] != '/');
-#endif
 
   /* Test the case where the buffer is too small */
   len = SMALLPATH;

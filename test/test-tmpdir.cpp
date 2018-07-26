@@ -45,11 +45,7 @@ TEST_IMPL(tmpdir) {
 
   if (len > 1) {
     last = tmpdir[len - 1];
-#ifdef _WIN32
-    ASSERT(last != '\\');
-#else
     ASSERT(last != '/');
-#endif
   }
 
   /* Test the case where the buffer is too small */

@@ -23,8 +23,6 @@
 #include "task.h"
 
 
-#ifndef _WIN32
-
 #include <fcntl.h>
 #include <errno.h>
 #include <stdio.h>
@@ -42,16 +40,10 @@ static unsigned int close_called;
 
 static void set_nonblocking(uv_os_sock_t sock) {
   int r;
-#ifdef _WIN32
-  unsigned long on = 1;
-  r = ioctlsocket(sock, FIONBIO, &on);
-  ASSERT(r == 0);
-#else
   int flags = fcntl(sock, F_GETFL, 0);
   ASSERT(flags >= 0);
   r = fcntl(sock, F_SETFL, flags | O_NONBLOCK);
   ASSERT(r >= 0);
-#endif
 }
 
 
@@ -159,11 +151,3 @@ TEST_IMPL(pipe_sendmsg) {
   return 0;
 }
 
-#else  /* !_WIN32 */
-
-TEST_IMPL(pipe_sendmsg) {
-  MAKE_VALGRIND_HAPPY();
-  return 0;
-}
-
-#endif  /* _WIN32 */

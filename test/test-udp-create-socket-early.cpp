@@ -24,12 +24,6 @@
 #include "task.h"
 #include <string.h>
 
-#ifdef _WIN32
-# define INVALID_FD (INVALID_HANDLE_VALUE)
-#else
-# define INVALID_FD (-1)
-#endif
-
 
 TEST_IMPL(udp_create_early) {
   struct sockaddr_in addr;
@@ -48,12 +42,10 @@ TEST_IMPL(udp_create_early) {
   ASSERT(fd != INVALID_FD);
 
   /* Windows returns WSAEINVAL if the socket is not bound */
-#ifndef _WIN32
   namelen = sizeof sockname;
   r = uv_udp_getsockname(&client, (struct sockaddr*) &sockname, &namelen);
   ASSERT(r == 0);
   ASSERT(sockname.sin_family == AF_INET);
-#endif
 
   r = uv_udp_bind(&client, (const struct sockaddr*) &addr, 0);
   ASSERT(r == 0);
@@ -92,7 +84,6 @@ TEST_IMPL(udp_create_early_bad_bind) {
   ASSERT(fd != INVALID_FD);
 
   /* Windows returns WSAEINVAL if the socket is not bound */
-#ifndef _WIN32
   {
     int namelen;
     struct sockaddr_in6 sockname;
@@ -101,14 +92,9 @@ TEST_IMPL(udp_create_early_bad_bind) {
     ASSERT(r == 0);
     ASSERT(sockname.sin6_family == AF_INET6);
   }
-#endif
 
   r = uv_udp_bind(&client, (const struct sockaddr*) &addr, 0);
-#ifndef _WIN32
   ASSERT(r == UV_EINVAL);
-#else
-  ASSERT(r == UV_EFAULT);
-#endif
 
   uv_close((uv_handle_t*) &client, NULL);
   uv_run(uv_default_loop(), UV_RUN_DEFAULT);

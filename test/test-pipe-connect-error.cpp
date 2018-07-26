@@ -25,11 +25,7 @@
 #include <stdlib.h>
 
 
-#ifdef _WIN32
-# define BAD_PIPENAME "bad-pipe"
-#else
 # define BAD_PIPENAME "/path/to/unix/socket/that/really/should/not/be/there"
-#endif
 
 
 static int close_cb_called = 0;

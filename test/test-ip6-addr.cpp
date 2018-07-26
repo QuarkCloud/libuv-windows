@@ -63,19 +63,11 @@ TEST_IMPL(ip6_addr_link_local) {
     iface_index = address->address.address6.sin6_scope_id;
     device_name = address->name;
 
-#ifdef _WIN32
-    snprintf(scoped_addr,
-             sizeof(scoped_addr),
-             "%s%%%d",
-             string_address,
-             iface_index);
-#else
     snprintf(scoped_addr,
              sizeof(scoped_addr),
              "%s%%%s",
              string_address,
              device_name);
-#endif
 
     fprintf(stderr, "Testing link-local address %s "
             "(iface_index: 0x%02x, device_name: %s)\n",

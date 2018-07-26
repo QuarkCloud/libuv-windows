@@ -85,7 +85,8 @@ static void synchronize(void) {
 }
 
 
-static void thread_rwlock_trylock_peer(void* unused) {
+static void thread_rwlock_trylock_peer(void* unused) 
+{
   (void) &unused;
 
   uv_mutex_lock(&mutex);

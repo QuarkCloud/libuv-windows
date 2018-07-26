@@ -22,14 +22,6 @@
 #include "uv.h"
 #include "task.h"
 
-#ifdef _WIN32
-
-TEST_IMPL(eintr_handling) {
-  RETURN_SKIP("Test not implemented on Windows.");
-}
-
-#else  /* !_WIN32 */
-
 #include <string.h>
 #include <unistd.h>
 
@@ -91,4 +83,3 @@ TEST_IMPL(eintr_handling) {
   return 0;
 }
 
-#endif  /* !_WIN32 */
