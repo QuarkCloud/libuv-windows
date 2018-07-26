@@ -8,6 +8,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libuv", "src\libuv.vcproj",
 		{A08041CF-81D7-4A5C-A1D1-216FA37D2D46} = {A08041CF-81D7-4A5C-A1D1-216FA37D2D46}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "test\test.vcproj", "{0E2CFAAC-F501-410C-AB21-659B786A741F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A08041CF-81D7-4A5C-A1D1-216FA37D2D46} = {A08041CF-81D7-4A5C-A1D1-216FA37D2D46}
+		{E37EFFFA-BEE6-4DBA-9DA9-F8703E3C0002} = {E37EFFFA-BEE6-4DBA-9DA9-F8703E3C0002}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -22,6 +28,10 @@ Global
 		{E37EFFFA-BEE6-4DBA-9DA9-F8703E3C0002}.Debug|Win32.Build.0 = Debug|Win32
 		{E37EFFFA-BEE6-4DBA-9DA9-F8703E3C0002}.Release|Win32.ActiveCfg = Release|Win32
 		{E37EFFFA-BEE6-4DBA-9DA9-F8703E3C0002}.Release|Win32.Build.0 = Release|Win32
+		{0E2CFAAC-F501-410C-AB21-659B786A741F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0E2CFAAC-F501-410C-AB21-659B786A741F}.Debug|Win32.Build.0 = Debug|Win32
+		{0E2CFAAC-F501-410C-AB21-659B786A741F}.Release|Win32.ActiveCfg = Release|Win32
+		{0E2CFAAC-F501-410C-AB21-659B786A741F}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

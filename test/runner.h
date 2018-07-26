@@ -93,11 +93,7 @@ extern char executable_path[4096];
 /*
  * Include platform-dependent definitions
  */
-#ifdef _WIN32
-# include "runner-win.h"
-#else
 # include "runner-unix.h"
-#endif
 
 
 /* The array that is filled by test-list.h or benchmark-list.h */

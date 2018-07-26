@@ -23,11 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#ifdef _WIN32
-# include <io.h>
-#else
-# include <unistd.h>
-#endif
+#include <unistd.h>
 
 #include "uv.h"
 #include "runner.h"
@@ -46,7 +42,8 @@ int spawn_stdin_stdout(void);
 static int maybe_run_test(int argc, char **argv);
 
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   if (platform_init(argc, argv))
     return EXIT_FAILURE;
 
@@ -67,7 +64,8 @@ int main(int argc, char **argv) {
 }
 
 
-static int maybe_run_test(int argc, char **argv) {
+static int maybe_run_test(int argc, char **argv)
+{
   if (strcmp(argv[1], "--list") == 0) {
     print_tests(stdout);
     return 0;
@@ -121,10 +119,6 @@ static int maybe_run_test(int argc, char **argv) {
 
   if (strcmp(argv[1], "spawn_helper5") == 0) {
     const char out[] = "fourth stdio!\n";
-#ifdef _WIN32
-    DWORD bytes;
-    WriteFile((HANDLE) _get_osfhandle(3), out, sizeof(out) - 1, &bytes, NULL);
-#else
     {
       ssize_t r;
 
@@ -134,7 +128,6 @@ static int maybe_run_test(int argc, char **argv) {
 
       fsync(3);
     }
-#endif
     return 1;
   }
 
@@ -163,7 +156,6 @@ static int maybe_run_test(int argc, char **argv) {
     return 1;
   }
 
-#ifndef _WIN32
   if (strcmp(argv[1], "spawn_helper8") == 0) {
     int fd;
     ASSERT(sizeof(fd) == read(0, &fd, sizeof(fd)));
@@ -172,13 +164,11 @@ static int maybe_run_test(int argc, char **argv) {
 
     return 1;
   }
-#endif  /* !_WIN32 */
 
   if (strcmp(argv[1], "spawn_helper9") == 0) {
     return spawn_stdin_stdout();
   }
 
-#ifndef _WIN32
   if (strcmp(argv[1], "spawn_helper_setuid_setgid") == 0) {
     uv_uid_t uid = atoi(argv[2]);
     uv_gid_t gid = atoi(argv[3]);
@@ -188,7 +178,6 @@ static int maybe_run_test(int argc, char **argv) {
 
     return 1;
   }
-#endif  /* !_WIN32 */
 
   return run_test(argv[1], 0, 1);
 }

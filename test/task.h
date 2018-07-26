@@ -28,16 +28,10 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-#if defined(_MSC_VER) && _MSC_VER < 1600
-# include "stdint-msvc2008.h"
-#else
 # include <stdint.h>
-#endif
 
-#if !defined(_WIN32)
 # include <sys/time.h>
 # include <sys/resource.h>  /* setrlimit() */
-#endif
 
 #ifdef __clang__
 # pragma clang diagnostic ignored "-Wvariadic-macros"
@@ -47,25 +41,10 @@
 #define TEST_PORT 9123
 #define TEST_PORT_2 9124
 
-#ifdef _WIN32
-# define TEST_PIPENAME "\\\\?\\pipe\\uv-test"
-# define TEST_PIPENAME_2 "\\\\?\\pipe\\uv-test2"
-# define TEST_PIPENAME_3 "\\\\?\\pipe\\uv-test3"
-#else
 # define TEST_PIPENAME "/tmp/uv-test-sock"
 # define TEST_PIPENAME_2 "/tmp/uv-test-sock2"
 # define TEST_PIPENAME_3 "/tmp/uv-test-sock3"
-#endif
 
-#ifdef _WIN32
-# include <io.h>
-# ifndef S_IRUSR
-#  define S_IRUSR _S_IREAD
-# endif
-# ifndef S_IWUSR
-#  define S_IWUSR _S_IWRITE
-# endif
-#endif
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
