@@ -187,7 +187,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\test-ipc-send-recv.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\test-ipc.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\test-spawn.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\test-stdio-over-pipes.cpp"
 				>
 			</File>
 		</Filter>

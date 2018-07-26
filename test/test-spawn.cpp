@@ -228,7 +228,7 @@ TEST_IMPL(spawn_stdout) {
   uv_pipe_init(uv_default_loop(), &out, 0);
   options.stdio = stdio;
   options.stdio[0].flags = UV_IGNORE;
-  options.stdio[1].flags = UV_CREATE_PIPE | UV_WRITABLE_PIPE;
+  options.stdio[1].flags = (uv_stdio_flags)(UV_CREATE_PIPE | UV_WRITABLE_PIPE);
   options.stdio[1].data.stream = (uv_stream_t*)&out;
   options.stdio_count = 2;
 
@@ -525,9 +525,9 @@ TEST_IMPL(spawn_stdin) {
   uv_pipe_init(uv_default_loop(), &out, 0);
   uv_pipe_init(uv_default_loop(), &in, 0);
   options.stdio = stdio;
-  options.stdio[0].flags = UV_CREATE_PIPE | UV_READABLE_PIPE;
+  options.stdio[0].flags = (uv_stdio_flags)(UV_CREATE_PIPE | UV_READABLE_PIPE);
   options.stdio[0].data.stream = (uv_stream_t*)&in;
-  options.stdio[1].flags = UV_CREATE_PIPE | UV_WRITABLE_PIPE;
+  options.stdio[1].flags = (uv_stdio_flags)(UV_CREATE_PIPE | UV_WRITABLE_PIPE);
   options.stdio[1].data.stream = (uv_stream_t*)&out;
   options.stdio_count = 2;
 
@@ -566,7 +566,7 @@ TEST_IMPL(spawn_stdio_greater_than_3) {
   options.stdio[0].flags = UV_IGNORE;
   options.stdio[1].flags = UV_IGNORE;
   options.stdio[2].flags = UV_IGNORE;
-  options.stdio[3].flags = UV_CREATE_PIPE | UV_WRITABLE_PIPE;
+  options.stdio[3].flags = (uv_stdio_flags)(UV_CREATE_PIPE | UV_WRITABLE_PIPE);
   options.stdio[3].data.stream = (uv_stream_t*)&pipe;
   options.stdio_count = 4;
 
@@ -646,7 +646,7 @@ TEST_IMPL(spawn_preserve_env) {
   uv_pipe_init(uv_default_loop(), &out, 0);
   options.stdio = stdio;
   options.stdio[0].flags = UV_IGNORE;
-  options.stdio[1].flags = UV_CREATE_PIPE | UV_WRITABLE_PIPE;
+  options.stdio[1].flags = (uv_stdio_flags)(UV_CREATE_PIPE | UV_WRITABLE_PIPE);
   options.stdio[1].data.stream = (uv_stream_t*) &out;
   options.stdio_count = 2;
 
@@ -724,11 +724,11 @@ TEST_IMPL(spawn_and_kill_with_std) {
   ASSERT(r == 0);
 
   options.stdio = stdio;
-  options.stdio[0].flags = UV_CREATE_PIPE | UV_READABLE_PIPE;
+  options.stdio[0].flags = (uv_stdio_flags)(UV_CREATE_PIPE | UV_READABLE_PIPE);
   options.stdio[0].data.stream = (uv_stream_t*)&in;
-  options.stdio[1].flags = UV_CREATE_PIPE | UV_WRITABLE_PIPE;
+  options.stdio[1].flags = (uv_stdio_flags)(UV_CREATE_PIPE | UV_WRITABLE_PIPE);
   options.stdio[1].data.stream = (uv_stream_t*)&out;
-  options.stdio[2].flags = UV_CREATE_PIPE | UV_WRITABLE_PIPE;
+  options.stdio[2].flags = (uv_stdio_flags)(UV_CREATE_PIPE | UV_WRITABLE_PIPE);
   options.stdio[2].data.stream = (uv_stream_t*)&err;
   options.stdio_count = 3;
 
@@ -775,9 +775,9 @@ TEST_IMPL(spawn_and_ping) {
   uv_pipe_init(uv_default_loop(), &out, 0);
   uv_pipe_init(uv_default_loop(), &in, 0);
   options.stdio = stdio;
-  options.stdio[0].flags = UV_CREATE_PIPE | UV_READABLE_PIPE;
+  options.stdio[0].flags = (uv_stdio_flags)(UV_CREATE_PIPE | UV_READABLE_PIPE);
   options.stdio[0].data.stream = (uv_stream_t*)&in;
-  options.stdio[1].flags = UV_CREATE_PIPE | UV_WRITABLE_PIPE;
+  options.stdio[1].flags = (uv_stdio_flags)(UV_CREATE_PIPE | UV_WRITABLE_PIPE);
   options.stdio[1].data.stream = (uv_stream_t*)&out;
   options.stdio_count = 2;
 
@@ -822,9 +822,9 @@ TEST_IMPL(spawn_same_stdout_stderr) {
   uv_pipe_init(uv_default_loop(), &out, 0);
   uv_pipe_init(uv_default_loop(), &in, 0);
   options.stdio = stdio;
-  options.stdio[0].flags = UV_CREATE_PIPE | UV_READABLE_PIPE;
+  options.stdio[0].flags = (uv_stdio_flags)(UV_CREATE_PIPE | UV_READABLE_PIPE);
   options.stdio[0].data.stream = (uv_stream_t*)&in;
-  options.stdio[1].flags = UV_CREATE_PIPE | UV_WRITABLE_PIPE;
+  options.stdio[1].flags = (uv_stdio_flags)(UV_CREATE_PIPE | UV_WRITABLE_PIPE);
   options.stdio[1].data.stream = (uv_stream_t*)&out;
   options.stdio_count = 2;
 
@@ -867,7 +867,7 @@ TEST_IMPL(spawn_closed_process_io) {
 
   uv_pipe_init(uv_default_loop(), &in, 0);
   options.stdio = stdio;
-  options.stdio[0].flags = UV_CREATE_PIPE | UV_READABLE_PIPE;
+  options.stdio[0].flags = (uv_stdio_flags)(UV_CREATE_PIPE | UV_READABLE_PIPE);
   options.stdio[0].data.stream = (uv_stream_t*) &in;
   options.stdio_count = 1;
 
@@ -1051,7 +1051,7 @@ TEST_IMPL(spawn_fs_open) {
   ASSERT(0 == uv_pipe_init(uv_default_loop(), &in, 0));
 
   options.stdio = stdio;
-  options.stdio[0].flags = UV_CREATE_PIPE | UV_READABLE_PIPE;
+  options.stdio[0].flags = (uv_stdio_flags)(UV_CREATE_PIPE | UV_READABLE_PIPE);
   options.stdio[0].data.stream = (uv_stream_t*) &in;
   options.stdio_count = 1;
 

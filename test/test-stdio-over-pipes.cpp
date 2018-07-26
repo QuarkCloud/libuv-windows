@@ -106,7 +106,7 @@ static void on_read(uv_stream_t* tcp, ssize_t nread, const uv_buf_t* rdbuf) {
     if (output_used == 12) {
       ASSERT(memcmp("hello world\n", output, 12) == 0);
       wrbuf = uv_buf_init(output, output_used);
-      req = malloc(sizeof(*req));
+      req = (uv_write_t *)malloc(sizeof(*req));
       r = uv_write(req, (uv_stream_t*)&in, &wrbuf, 1, after_write);
       ASSERT(r == 0);
     }
@@ -129,9 +129,9 @@ TEST_IMPL(stdio_over_pipes) {
   uv_pipe_init(loop, &in, 0);
 
   options.stdio = stdio;
-  options.stdio[0].flags = UV_CREATE_PIPE | UV_READABLE_PIPE;
+  options.stdio[0].flags = (uv_stdio_flags)(UV_CREATE_PIPE | UV_READABLE_PIPE);
   options.stdio[0].data.stream = (uv_stream_t*)&in;
-  options.stdio[1].flags = UV_CREATE_PIPE | UV_WRITABLE_PIPE;
+  options.stdio[1].flags = (uv_stdio_flags)(UV_CREATE_PIPE | UV_WRITABLE_PIPE);
   options.stdio[1].data.stream = (uv_stream_t*)&out;
   options.stdio_count = 2;
 
@@ -181,10 +181,9 @@ static void after_pipe_write(uv_write_t* req, int status) {
 }
 
 
-static void on_read_alloc(uv_handle_t* handle,
-                          size_t suggested_size,
-                          uv_buf_t* buf) {
-  buf->base = malloc(suggested_size);
+static void on_read_alloc(uv_handle_t* handle,size_t suggested_size,uv_buf_t* buf)
+{
+  buf->base = (char *)malloc(suggested_size);
   buf->len = suggested_size;
 }
 

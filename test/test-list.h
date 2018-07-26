@@ -20,7 +20,7 @@
  */
 
 #include "uv.h"
-
+/**
 TEST_DECLARE   (platform_output)
 TEST_DECLARE   (callback_order)
 TEST_DECLARE   (close_order)
@@ -342,8 +342,10 @@ HELPER_DECLARE (udp4_echo_server)
 HELPER_DECLARE (pipe_echo_server)
 
 TEST_DECLARE   (queue_foreach_delete)
+*/
 
 TASK_LIST_START
+/**
   TEST_ENTRY_CUSTOM (platform_output, 0, 1, 5000)
 
 
@@ -727,5 +729,5 @@ TASK_LIST_START
   TEST_ENTRY  (ip6_addr_link_local)
 
   TEST_ENTRY  (queue_foreach_delete)
-
+*/
 TASK_LIST_END

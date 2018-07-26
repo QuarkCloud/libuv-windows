@@ -30,7 +30,7 @@
 #include "task.h"
 
 /* Actual tests and helpers are defined in test-list.h */
-//#include "test-list.h"
+#include "test-list.h"
 
 int ipc_helper(int listen_after_write);
 int ipc_helper_tcp_connection(void);
