@@ -60,9 +60,7 @@
 static const unsigned first_handle_number_idle     = 2;
 static const unsigned first_handle_number_prepare  = 2;
 static const unsigned first_handle_number_check    = 2;
-#ifdef __linux__
 static const unsigned first_handle_number_fs_event = 0;
-#endif
 
 
 #define DEFINE_GLOBALS_AND_CBS(name)                                          \
@@ -122,7 +120,6 @@ DEFINE_GLOBALS_AND_CBS(idle)
 DEFINE_GLOBALS_AND_CBS(prepare)
 DEFINE_GLOBALS_AND_CBS(check)
 
-#ifdef __linux__
 DEFINE_GLOBALS_AND_CBS(fs_event)
 
 static const char watched_dir[] = ".";
@@ -159,7 +156,6 @@ static void helper_timer_cb(uv_timer_t* thandle) {
 
   helper_timer_cb_calls++;
 }
-#endif
 
 
 TEST_IMPL(queue_foreach_delete) {
@@ -172,7 +168,6 @@ TEST_IMPL(queue_foreach_delete) {
   INIT_AND_START(prepare, loop);
   INIT_AND_START(check,   loop);
 
-#ifdef __linux__
   init_and_start_fs_events(loop);
 
   /* helper timer to trigger async and fs_event callbacks */
@@ -181,7 +176,6 @@ TEST_IMPL(queue_foreach_delete) {
 
   r = uv_timer_start(&timer, helper_timer_cb, 0, 0);
   ASSERT(r == 0);
-#endif
 
   r = uv_run(loop, UV_RUN_NOWAIT);
   ASSERT(r == 1);
@@ -190,9 +184,7 @@ TEST_IMPL(queue_foreach_delete) {
   END_ASSERTS(prepare);
   END_ASSERTS(check);
 
-#ifdef __linux__
   ASSERT(helper_timer_cb_calls == 1);
-#endif
 
   MAKE_VALGRIND_HAPPY();
 

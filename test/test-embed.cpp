@@ -25,34 +25,8 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#ifndef HAVE_KQUEUE
-# if defined(__APPLE__) ||                                                    \
-     defined(__DragonFly__) ||                                                \
-     defined(__FreeBSD__) ||                                                  \
-     defined(__FreeBSD_kernel__) ||                                           \
-     defined(__OpenBSD__) ||                                                  \
-     defined(__NetBSD__)
-#  define HAVE_KQUEUE 1
-# endif
-#endif
-
-#ifndef HAVE_EPOLL
-# if defined(__linux__)
-#  define HAVE_EPOLL 1
-# endif
-#endif
-
-#if defined(HAVE_KQUEUE) || defined(HAVE_EPOLL)
-
-#if defined(HAVE_KQUEUE)
-# include <sys/types.h>
-# include <sys/event.h>
-# include <sys/time.h>
-#endif
-
-#if defined(HAVE_EPOLL)
+#define HAVE_EPOLL 1
 # include <sys/epoll.h>
-#endif
 
 static uv_thread_t embed_thread;
 static uv_sem_t embed_sem;
@@ -73,17 +47,10 @@ static void embed_thread_runner(void* arg) {
     timeout = uv_backend_timeout(uv_default_loop());
 
     do {
-#if defined(HAVE_KQUEUE)
-      struct timespec ts;
-      ts.tv_sec = timeout / 1000;
-      ts.tv_nsec = (timeout % 1000) * 1000000;
-      r = kevent(fd, NULL, 0, NULL, 0, &ts);
-#elif defined(HAVE_EPOLL)
       {
         struct epoll_event ev;
         r = epoll_wait(fd, &ev, 1, timeout);
       }
-#endif
     } while (r == -1 && errno == EINTR);
     uv_async_send(&embed_async);
     uv_sem_wait(&embed_sem);
@@ -104,11 +71,8 @@ static void embed_timer_cb(uv_timer_t* timer) {
 
   uv_close((uv_handle_t*) &embed_async, NULL);
 }
-#endif
-
 
 TEST_IMPL(embed) {
-#if defined(HAVE_KQUEUE) || defined(HAVE_EPOLL)
   uv_loop_t external;
 
   ASSERT(0 == uv_loop_init(&external));
@@ -133,7 +97,6 @@ TEST_IMPL(embed) {
   uv_loop_close(&external);
 
   ASSERT(embed_timer_called == 1);
-#endif
 
   return 0;
 }

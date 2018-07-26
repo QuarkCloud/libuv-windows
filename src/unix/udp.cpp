@@ -679,13 +679,7 @@ static int uv__setsockopt_maybe_char(uv_udp_t* handle,
                                      int option4,
                                      int option6,
                                      int val) {
-#if defined(__sun) || defined(_AIX) || defined(__MVS__)
-  char arg = val;
-#elif defined(__OpenBSD__)
-  unsigned char arg = val;
-#else
   int arg = val;
-#endif
 
   if (val < 0 || val > 255)
     return -EINVAL;
@@ -722,16 +716,6 @@ int uv_udp_set_ttl(uv_udp_t* handle, int ttl) {
  * so hardcode the size of these options on this platform,
  * and use the general uv__setsockopt_maybe_char call on other platforms.
  */
-#if defined(__sun) || defined(_AIX) || defined(__OpenBSD__) || \
-    defined(__MVS__)
-
-  return uv__setsockopt(handle,
-                        IP_TTL,
-                        IPV6_UNICAST_HOPS,
-                        &ttl,
-                        sizeof(ttl));
-#endif /* defined(__sun) || defined(_AIX) || defined (__OpenBSD__) ||
-          defined(__MVS__) */
 
   return uv__setsockopt_maybe_char(handle,
                                    IP_TTL,

@@ -134,13 +134,6 @@ TEST_IMPL(tty_file)
 }
 
 TEST_IMPL(tty_pty) {
-#if defined(__APPLE__)                            || \
-    defined(__DragonFly__)                        || \
-    defined(__FreeBSD__)                          || \
-    defined(__FreeBSD_kernel__)                   || \
-    (defined(__linux__) && !defined(__ANDROID__)) || \
-    defined(__NetBSD__)                           || \
-    defined(__OpenBSD__)
   int master_fd, slave_fd, r;
   struct winsize w;
   uv_loop_t loop;
@@ -169,6 +162,5 @@ TEST_IMPL(tty_pty) {
   ASSERT(0 == uv_run(&loop, UV_RUN_DEFAULT));
 
   MAKE_VALGRIND_HAPPY();
-#endif
   return 0;
 }

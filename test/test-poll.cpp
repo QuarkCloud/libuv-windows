@@ -552,8 +552,6 @@ TEST_IMPL(poll_bad_fdtype) {
   return 0;
 }
 
-
-#ifdef __linux__
 TEST_IMPL(poll_nested_epoll) {
   uv_poll_t poll_handle;
   int fd;
@@ -572,5 +570,4 @@ TEST_IMPL(poll_nested_epoll) {
   MAKE_VALGRIND_HAPPY();
   return 0;
 }
-#endif  /* __linux__ */
 

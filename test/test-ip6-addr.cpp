@@ -24,11 +24,8 @@
 
 #include <stdio.h>
 #include <string.h>
-
-#ifdef __linux__
-# include <sys/socket.h>
-# include <net/if.h>
-#endif
+#include <sys/socket.h>
+#include <net/if.h>
 
 
 TEST_IMPL(ip6_addr_link_local) {

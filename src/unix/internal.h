@@ -73,14 +73,6 @@
 # define UV__POLLRDHUP 0x2000
 #endif
 
-#if !defined(O_CLOEXEC) && defined(__FreeBSD__)
-/*
- * It may be that we are just missing `__POSIX_VISIBLE >= 200809`.
- * Try using fixed value const and give up, if it doesn't work
- */
-# define O_CLOEXEC 0x00100000
-#endif
-
 typedef struct uv__stream_queued_fds_s uv__stream_queued_fds_t;
 
 /* handle flags */

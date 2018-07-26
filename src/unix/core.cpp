@@ -1056,11 +1056,7 @@ int uv_os_tmpdir(char* buffer, size_t* size) {
 #undef CHECK_ENV_VAR
 
   /* No temp environment variables defined */
-  #if defined(__ANDROID__)
-    buf = "/data/local/tmp";
-  #else
     buf = "/tmp";
-  #endif
 
 return_buffer:
   len = strlen(buf);

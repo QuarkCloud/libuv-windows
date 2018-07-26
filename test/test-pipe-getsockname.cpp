@@ -152,7 +152,6 @@ TEST_IMPL(pipe_getsockname) {
 
 
 TEST_IMPL(pipe_getsockname_abstract) {
-#if defined(__linux__)
   char buf[1024];
   size_t len;
   int r;
@@ -192,10 +191,6 @@ TEST_IMPL(pipe_getsockname_abstract) {
   ASSERT(pipe_close_cb_called == 1);
   MAKE_VALGRIND_HAPPY();
   return 0;
-#else
-  MAKE_VALGRIND_HAPPY();
-  return 0;
-#endif
 }
 
 TEST_IMPL(pipe_getsockname_blocking) {
