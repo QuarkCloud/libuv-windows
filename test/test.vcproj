@@ -195,6 +195,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\test-platform-output.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\test-spawn.cpp"
 				>
 			</File>
@@ -214,6 +218,10 @@
 			</File>
 			<File
 				RelativePath=".\runner.h"
+				>
+			</File>
+			<File
+				RelativePath=".\test-list.h"
 				>
 			</File>
 		</Filter>
