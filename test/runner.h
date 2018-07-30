@@ -104,12 +104,8 @@ extern task_entry_t TASKS[];
  */
 int run_tests(int benchmark_output);
 
-/*
- * Run a single test. Starts up any helpers.
- */
-int run_test(const char* test,
-             int benchmark_output,
-             int test_count);
+/* Run a single test. Starts up any helpers. */
+int run_test(const char* test, int benchmark_output,int test_count);
 
 /*
  * Run a test part, i.e. the test or one of its helpers.

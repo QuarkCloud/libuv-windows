@@ -30,10 +30,6 @@
 #include <errno.h>
 #include <sys/ioctl.h>
 
-#if defined(__MVS__) && !defined(IMAXBEL)
-#define IMAXBEL 0
-#endif
-
 static int orig_termios_fd = -1;
 static struct termios orig_termios;
 static uv_spinlock_t termios_spinlock = UV_SPINLOCK_INITIALIZER;

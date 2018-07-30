@@ -33,11 +33,6 @@
 # include <sys/time.h>
 # include <sys/resource.h>  /* setrlimit() */
 
-#ifdef __clang__
-# pragma clang diagnostic ignored "-Wvariadic-macros"
-# pragma clang diagnostic ignored "-Wc99-extensions"
-#endif
-
 #define TEST_PORT 9123
 #define TEST_PORT_2 9124
 

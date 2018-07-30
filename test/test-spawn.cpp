@@ -21,6 +21,7 @@
 
 #include "uv.h"
 #include "task.h"
+#include "test-util.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -1268,7 +1269,8 @@ TEST_IMPL(spawn_inherit_streams) {
 }
 
 /* Helper for child process of spawn_inherit_streams */
-int spawn_stdin_stdout(void) {
+int spawn_stdin_stdout(void)
+{
   char buf[1024];
   char* pbuf;
   for (;;) {

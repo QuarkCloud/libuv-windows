@@ -21,6 +21,7 @@
 
 #include "uv.h"
 #include "task.h"
+#include "test-util.h"
 
 #include <stdio.h>
 #include <string.h>

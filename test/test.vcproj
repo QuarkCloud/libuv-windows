@@ -175,7 +175,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\run-tests.cpp"
+				RelativePath=".\main-tests.cpp"
 				>
 			</File>
 			<File
@@ -206,6 +206,10 @@
 				RelativePath=".\test-stdio-over-pipes.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\test-util.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Í·ÎÄ¼þ"
@@ -222,6 +226,10 @@
 			</File>
 			<File
 				RelativePath=".\test-list.h"
+				>
+			</File>
+			<File
+				RelativePath=".\test-util.h"
 				>
 			</File>
 		</Filter>

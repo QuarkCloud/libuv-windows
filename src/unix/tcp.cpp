@@ -115,10 +115,6 @@ int uv__tcp_bind(uv_tcp_t* tcp,
                    IPV6_V6ONLY,
                    &on,
                    sizeof on) == -1) {
-#if defined(__MVS__)
-      if (errno == EOPNOTSUPP)
-        return -EINVAL;
-#endif
       return -errno;
     }
   }
@@ -276,27 +272,6 @@ int uv_tcp_listen(uv_tcp_t* tcp, int backlog, uv_connection_cb cb) {
   err = maybe_new_socket(tcp, AF_INET, UV_STREAM_READABLE);
   if (err)
     return err;
-
-#ifdef __MVS__
-  /* on zOS the listen call does not bind automatically
-     if the socket is unbound. Hence the manual binding to
-     an arbitrary port is required to be done manually
-  */
-
-  if (!(tcp->flags & UV_HANDLE_BOUND)) {
-    struct sockaddr_storage saddr;
-    socklen_t slen  = sizeof(saddr);
-    memset(&saddr, 0, sizeof(saddr));
-
-    if (getsockname(tcp->io_watcher.fd, (struct sockaddr*) &saddr, &slen))
-      return -errno;
-
-    if (bind(tcp->io_watcher.fd, (struct sockaddr*) &saddr, slen))
-      return -errno;
-
-    tcp->flags |= UV_HANDLE_BOUND;
-  }
-#endif
 
   if (listen(tcp->io_watcher.fd, backlog))
     return -errno;

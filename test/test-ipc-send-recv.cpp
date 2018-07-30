@@ -21,6 +21,7 @@
 
 #include "uv.h"
 #include "task.h"
+#include "test-util.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -165,7 +166,8 @@ static void connect_cb(uv_connect_t* req, int status) {
   ASSERT(r == 0);
 }
 
-static int run_test(int inprocess) {
+static int run_test(int inprocess)
+{
   uv_process_t process;
   uv_thread_t tid;
   int r;

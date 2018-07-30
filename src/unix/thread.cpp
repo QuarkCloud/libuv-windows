@@ -32,11 +32,6 @@
 
 #include <limits.h>
 
-#ifdef __MVS__
-#include <sys/ipc.h>
-#include <sys/sem.h>
-#endif
-
 #undef NANOSEC
 #define NANOSEC ((uint64_t) 1e9)
 

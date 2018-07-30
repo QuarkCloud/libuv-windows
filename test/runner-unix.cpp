@@ -59,7 +59,8 @@ int platform_init(int argc, char **argv) {
 
 /* Invoke "argv[0] test-name [test-part]". Store process info in *p. */
 /* Make sure that all stdio output of the processes is buffered up. */
-int process_start(char* name, char* part, process_info_t* p, int is_helper) {
+int process_start(char* name, char* part, process_info_t* p, int is_helper)
+{
   FILE* stdout_file;
   const char* arg;
   char* args[16];
@@ -202,11 +203,7 @@ int process_wait(process_info_t* vec, int n, int timeout) {
   if (pthread_attr_init(&attr))
     abort();
 
-#if defined(__MVS__)
-  if (pthread_attr_setstacksize(&attr, 1024 * 1024))
-#else
   if (pthread_attr_setstacksize(&attr, 256 * 1024))
-#endif
     abort();
 
   r = pthread_create(&tid, &attr, dowait, &args);
@@ -374,12 +371,9 @@ void process_cleanup(process_info_t *p) {
 
 
 /* Move the console cursor one line up and back to the first column. */
-void rewind_cursor(void) {
-#if defined(__MVS__)
-  fprintf(stderr, "\047[2K\r");
-#else
+void rewind_cursor(void)
+{
   fprintf(stderr, "\033[2K\r");
-#endif
 }
 
 

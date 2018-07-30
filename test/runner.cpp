@@ -66,7 +66,8 @@ const char* fmt(double d) {
 }
 
 
-int run_tests(int benchmark_output) {
+int run_tests(int benchmark_output) 
+{
   int total;
   int passed;
   int failed;
@@ -97,7 +98,8 @@ int run_tests(int benchmark_output) {
     }
 
     test_result = run_test(task->task_name, benchmark_output, current);
-    switch (test_result) {
+    switch (test_result)
+    {
     case TEST_OK: passed++; break;
     case TEST_SKIP: skipped++; break;
     default: failed++;
@@ -142,9 +144,8 @@ void log_tap_result(int test_count,
 }
 
 
-int run_test(const char* test,
-             int benchmark_output,
-             int test_count) {
+int run_test(const char* test,   int benchmark_output, int test_count)
+{
   char errmsg[1024] = "";
   process_info_t processes[1024];
   process_info_t *main_proc;
@@ -171,24 +172,18 @@ int run_test(const char* test,
   }
 
   /* Start the helpers first. */
-  for (task = TASKS; task->main; task++) {
-    if (strcmp(test, task->task_name) != 0) {
+  for (task = TASKS; task->main; task++)
+  {
+    if(strcmp(test, task->task_name) != 0)
       continue;
-    }
 
     /* Skip the test itself. */
-    if (!task->is_helper) {
+    if (!task->is_helper)
       continue;
-    }
 
-    if (process_start(task->task_name,
-                      task->process_name,
-                      &processes[process_count],
-                      1 /* is_helper */) == -1) {
-      snprintf(errmsg,
-               sizeof errmsg,
-               "Process `%s` failed to start.",
-               task->process_name);
+    if (process_start(task->task_name, task->process_name, &processes[process_count],1 /* is_helper */) == -1)
+    {
+      snprintf(errmsg, sizeof errmsg, "Process `%s` failed to start.", task->process_name);
       goto out;
     }
 
@@ -199,23 +194,17 @@ int run_test(const char* test,
   uv_sleep(250);
 
   /* Now start the test itself. */
-  for (task = TASKS; task->main; task++) {
-    if (strcmp(test, task->task_name) != 0) {
+  for (task = TASKS; task->main; task++)
+  {
+    if (strcmp(test, task->task_name) != 0)
       continue;
-    }
 
-    if (task->is_helper) {
+    if (task->is_helper)
       continue;
-    }
 
-    if (process_start(task->task_name,
-                      task->process_name,
-                      &processes[process_count],
-                      0 /* !is_helper */) == -1) {
-      snprintf(errmsg,
-               sizeof errmsg,
-               "Process `%s` failed to start.",
-               task->process_name);
+    if (process_start(task->task_name, task->process_name,&processes[process_count], 0 /* !is_helper */) == -1)
+    {
+      snprintf(errmsg,sizeof errmsg,"Process `%s` failed to start.",task->process_name);
       goto out;
     }
 
@@ -224,47 +213,46 @@ int run_test(const char* test,
     break;
   }
 
-  if (main_proc == NULL) {
-    snprintf(errmsg,
-             sizeof errmsg,
-             "No test with that name: %s",
-             test);
+  if (main_proc == NULL)
+  {
+    snprintf(errmsg,sizeof errmsg,"No test with that name: %s",test);
     goto out;
   }
 
   result = process_wait(main_proc, 1, task->timeout);
-  if (result == -1) {
+  if (result == -1)
+  {
     FATAL("process_wait failed");
-  } else if (result == -2) {
+  } 
+  else if (result == -2)
+  {
     /* Don't have to clean up the process, process_wait() has killed it. */
-    snprintf(errmsg,
-             sizeof errmsg,
-             "timeout");
+    snprintf(errmsg,sizeof errmsg,"timeout");
     goto out;
   }
 
   status = process_reap(main_proc);
-  if (status != TEST_OK) {
-    snprintf(errmsg,
-             sizeof errmsg,
-             "exit code %d",
-             status);
+  if (status != TEST_OK)
+  {
+    snprintf(errmsg,sizeof errmsg,"exit code %d",status);
     goto out;
   }
 
-  if (benchmark_output) {
+  if (benchmark_output)
+  {
     /* Give the helpers time to clean up their act. */
     uv_sleep(1000);
   }
 
 out:
   /* Reap running processes except the main process, it's already dead. */
-  for (i = 0; i < process_count - 1; i++) {
+  for (i = 0; i < process_count - 1; i++)
+  {
     process_terminate(&processes[i]);
   }
 
-  if (process_count > 0 &&
-      process_wait(processes, process_count - 1, -1) < 0) {
+  if (process_count > 0 &&process_wait(processes, process_count - 1, -1) < 0)
+  {
     FATAL("process_wait failed");
   }
 
