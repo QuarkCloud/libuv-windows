@@ -313,9 +313,8 @@ int process_copy_output(process_info_t* p, FILE* stream) {
 
 
 /* Copy the last line of the stdio output buffer to `buffer` */
-int process_read_last_line(process_info_t *p,
-                           char* buffer,
-                           size_t buffer_len) {
+int process_read_last_line(process_info_t *p, char* buffer, size_t buffer_len)
+{
   char* ptr;
 
   int r = fseek(p->stdout_file, 0, SEEK_SET);

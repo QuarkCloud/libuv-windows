@@ -27,9 +27,7 @@
 #include <string.h>
 
 /* See test-ipc.ctx */
-void spawn_helper(uv_pipe_t* channel,
-                  uv_process_t* process,
-                  const char* helper);
+void spawn_helper(uv_pipe_t* channel, uv_process_t* process, const char* helper);
 
 void ipc_send_recv_helper_threadproc(void* arg);
 
@@ -74,9 +72,8 @@ static int recv_cb_count;
 static int write2_cb_called;
 
 
-static void alloc_cb(uv_handle_t* handle,
-                     size_t suggested_size,
-                     uv_buf_t* buf) {
+static void alloc_cb(uv_handle_t* handle, size_t suggested_size, uv_buf_t* buf)
+{
   /* we're not actually reading anything so a small buffer is okay */
   static char slab[8];
   buf->base = slab;
@@ -84,9 +81,8 @@ static void alloc_cb(uv_handle_t* handle,
 }
 
 
-static void recv_cb(uv_stream_t* handle,
-                    ssize_t nread,
-                    const uv_buf_t* buf) {
+static void recv_cb(uv_stream_t* handle, ssize_t nread, const uv_buf_t* buf)
+{
   uv_handle_type pending;
   uv_pipe_t* pipe;
   int r;
@@ -136,7 +132,8 @@ static void recv_cb(uv_stream_t* handle,
   }
 }
 
-static void connect_cb(uv_connect_t* req, int status) {
+static void connect_cb(uv_connect_t* req, int status)
+{
   int r;
   uv_buf_t buf;
 

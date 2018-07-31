@@ -208,9 +208,8 @@ static void on_read(uv_stream_t* handle,
 }
 
 
-void spawn_helper(uv_pipe_t* channel,
-                  uv_process_t* process,
-                  const char* helper) {
+void spawn_helper(uv_pipe_t* channel, uv_process_t* process, const char* helper)
+{
   uv_process_options_t options;
   size_t exepath_size;
   char exepath[1024];

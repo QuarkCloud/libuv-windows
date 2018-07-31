@@ -144,7 +144,7 @@ void log_tap_result(int test_count,
 }
 
 
-int run_test(const char* test,   int benchmark_output, int test_count)
+int run_test(const char* test, int benchmark_output, int test_count)
 {
   char errmsg[1024] = "";
   process_info_t processes[1024];
