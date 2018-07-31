@@ -20,11 +20,13 @@
  */
 
 #ifndef TEST_RUNNER_UNIX_H
-#define TEST_RUNNER_UNIX_H
+#define TEST_RUNNER_UNIX_H 1
 
 #include <sys/types.h>
 #include <stdio.h> /* FILE */
+#include <pthread.h>
 
+/**
 typedef struct {
   FILE* stdout_file;
   pid_t pid;
@@ -32,5 +34,16 @@ typedef struct {
   int status;
   int terminated;
 } process_info_t;
+*/
+
+typedef struct {
+  FILE* stdout_file;
+  pthread_t tid ;
+  char* name;
+  int status;
+  int terminated;
+  char ** args ;
+  int (*main)(void) ;
+} thread_info_t;
 
 #endif  /* TEST_RUNNER_UNIX_H */

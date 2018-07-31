@@ -57,225 +57,63 @@ int platform_init(int argc, char **argv) {
 }
 
 
-/* Invoke "argv[0] test-name [test-part]". Store process info in *p. */
-/* Make sure that all stdio output of the processes is buffered up. */
-int process_start(char* name, char* part, process_info_t* p, int is_helper)
+void * thread_routine(void * param)
+{
+    thread_info_t * thread_info = (thread_info_t *)param ;
+
+    if(thread_info->main != NULL)
+        thread_info->main() ;
+
+    return NULL ;
+}
+
+int thread_start(char *name, char* part, int (*test_routine)(void) , thread_info_t *p, int is_helper)
 {
   FILE* stdout_file;
-  const char* arg;
   char* args[16];
   int n;
-  pid_t pid;
 
   stdout_file = tmpfile();
-  if (!stdout_file) {
+  if(stdout_file == NULL)
+  {
     perror("tmpfile");
     return -1;
   }
 
   p->terminated = 0;
   p->status = 0;
-
-  pid = fork();
-
-  if (pid < 0) {
-    perror("fork");
-    return -1;
-  }
-
-  if (pid == 0) {
-    /* child */
-    arg = getenv("UV_USE_VALGRIND");
-    n = 0;
-
-    /* Disable valgrind for helpers, it complains about helpers leaking memory.
-     * They're killed after the test and as such never get a chance to clean up.
-     */
-    if (is_helper == 0 && arg != NULL && atoi(arg) != 0) {
-      args[n++] = "valgrind";
-      args[n++] = "--quiet";
-      args[n++] = "--leak-check=full";
-      args[n++] = "--show-reachable=yes";
-      args[n++] = "--error-exitcode=125";
-    }
-
-    args[n++] = executable_path;
-    args[n++] = name;
-    args[n++] = part;
-    args[n++] = NULL;
-
-    dup2(fileno(stdout_file), STDOUT_FILENO);
-    dup2(fileno(stdout_file), STDERR_FILENO);
-    execvp(args[0], args);
-    perror("execvp()");
-    _exit(127);
-  }
-
-  /* parent */
-  p->pid = pid;
+  p->main = test_routine ;
   p->name = strdup(name);
   p->stdout_file = stdout_file;
+
+  n = 0;
+
+  /* Disable valgrind for helpers, it complains about helpers leaking memory.
+   * They're killed after the test and as such never get a chance to clean up.
+   */
+  args[n++] = executable_path;
+  args[n++] = name;
+  args[n++] = part;
+  args[n++] = NULL;
+
+  ::pthread_create(&p->tid , NULL , thread_routine , p) ;
 
   return 0;
 }
 
-
-typedef struct {
-  int pipe[2];
-  process_info_t* vec;
-  int n;
-} dowait_args;
-
-
-/* This function is run inside a pthread. We do this so that we can possibly
- * timeout.
- */
-static void* dowait(void* data)
+int thread_wait(thread_info_t *vec, int n, int timeout)
 {
-  dowait_args* args = (dowait_args*)data;
-
-  int i, r;
-  process_info_t* p;
-
-  for (i = 0; i < args->n; i++) {
-    p = (process_info_t*)(args->vec + i * sizeof(process_info_t));
-    if (p->terminated) continue;
-    r = waitpid(p->pid, &p->status, 0);
-    if (r < 0) {
-      perror("waitpid");
-      return NULL;
+    for(int idx = 0 ; idx < n ; ++idx)
+    {
+        thread_info_t& info = vec[idx] ;
+        ::pthread_join(info.tid , NULL) ;
     }
-    p->terminated = 1;
-  }
 
-  if (args->pipe[1] >= 0) {
-    /* Write a character to the main thread to notify it about this. */
-    ssize_t r;
-
-    do
-      r = write(args->pipe[1], "", 1);
-    while (r == -1 && errno == EINTR);
-  }
-
-  return NULL;
+    return 0 ;
 }
 
-
-/* Wait for all `n` processes in `vec` to terminate. */
-/* Time out after `timeout` msec, or never if timeout == -1 */
-/* Return 0 if all processes are terminated, -1 on error, -2 on timeout. */
-int process_wait(process_info_t* vec, int n, int timeout) {
-  int i;
-  int r;
-  int retval;
-  process_info_t* p;
-  dowait_args args;
-  pthread_t tid;
-  pthread_attr_t attr;
-  unsigned int elapsed_ms;
-  struct timeval timebase;
-  struct timeval tv;
-  fd_set fds;
-
-  args.vec = vec;
-  args.n = n;
-  args.pipe[0] = -1;
-  args.pipe[1] = -1;
-
-  /* The simple case is where there is no timeout */
-  if (timeout == -1) {
-    dowait(&args);
-    return 0;
-  }
-
-  /* Hard case. Do the wait with a timeout.
-   *
-   * Assumption: we are the only ones making this call right now. Otherwise
-   * we'd need to lock vec.
-   */
-
-  r = pipe((int*)&(args.pipe));
-  if (r) {
-    perror("pipe()");
-    return -1;
-  }
-
-  if (pthread_attr_init(&attr))
-    abort();
-
-  if (pthread_attr_setstacksize(&attr, 256 * 1024))
-    abort();
-
-  r = pthread_create(&tid, &attr, dowait, &args);
-
-  if (pthread_attr_destroy(&attr))
-    abort();
-
-  if (r) {
-    perror("pthread_create()");
-    retval = -1;
-    goto terminate;
-  }
-
-  if (gettimeofday(&timebase, NULL))
-    abort();
-
-  tv = timebase;
-  for (;;) {
-    /* Check that gettimeofday() doesn't jump back in time. */
-    assert(tv.tv_sec > timebase.tv_sec ||
-           (tv.tv_sec == timebase.tv_sec && tv.tv_usec >= timebase.tv_usec));
-
-    elapsed_ms =(unsigned int)((tv.tv_sec - timebase.tv_sec) * 1000 +
-        (tv.tv_usec / 1000) -(timebase.tv_usec / 1000));
-
-    r = 0;  /* Timeout. */
-    if (elapsed_ms >= (unsigned) timeout)
-      break;
-
-    tv.tv_sec = (timeout - elapsed_ms) / 1000;
-    tv.tv_usec = (timeout - elapsed_ms) % 1000 * 1000;
-
-    FD_ZERO(&fds);
-    FD_SET(args.pipe[0], &fds);
-
-    r = select(args.pipe[0] + 1, &fds, NULL, NULL, &tv);
-    if (!(r == -1 && errno == EINTR))
-      break;
-
-    if (gettimeofday(&tv, NULL))
-      abort();
-  }
-
-  if (r == -1) {
-    perror("select()");
-    retval = -1;
-
-  } else if (r) {
-    /* The thread completed successfully. */
-    retval = 0;
-
-  } else {
-    /* Timeout. Kill all the children. */
-    for (i = 0; i < n; i++) {
-      p = (process_info_t*)(vec + i * sizeof(process_info_t));
-      kill(p->pid, SIGTERM);
-    }
-    retval = -2;
-  }
-
-  if (pthread_join(tid, NULL))
-    abort();
-
-terminate:
-  close(args.pipe[0]);
-  close(args.pipe[1]);
-  return retval;
-}
-
-
-/* Returns the number of bytes in the stdio output buffer for process `p`. */
-long int process_output_size(process_info_t *p) {
+long int thread_output_size(thread_info_t *p)
+{
   /* Size of the p->stdout_file */
   struct stat buf;
 
@@ -287,9 +125,8 @@ long int process_output_size(process_info_t *p) {
   return (long)buf.st_size;
 }
 
-
-/* Copy the contents of the stdio output buffer to `fd`. */
-int process_copy_output(process_info_t* p, FILE* stream) {
+int thread_copy_output(thread_info_t* p, FILE* stream)
+{
   char buf[1024];
   int r;
 
@@ -311,9 +148,7 @@ int process_copy_output(process_info_t* p, FILE* stream) {
   return 0;
 }
 
-
-/* Copy the last line of the stdio output buffer to `buffer` */
-int process_read_last_line(process_info_t *p, char* buffer, size_t buffer_len)
+int thread_read_last_line(thread_info_t *p,char * buffer,size_t buffer_len)
 {
   char* ptr;
 
@@ -325,7 +160,8 @@ int process_read_last_line(process_info_t *p, char* buffer, size_t buffer_len)
 
   buffer[0] = '\0';
 
-  while (fgets(buffer, buffer_len, p->stdout_file) != NULL) {
+  while (fgets(buffer, buffer_len, p->stdout_file) != NULL)
+  {
     for (ptr = buffer; *ptr && *ptr != '\r' && *ptr != '\n'; ptr++);
     *ptr = '\0';
   }
@@ -338,32 +174,34 @@ int process_read_last_line(process_info_t *p, char* buffer, size_t buffer_len)
   return 0;
 }
 
+char* thread_get_name(thread_info_t *p)
+{
+    return p->name ;
+}
 
-/* Return the name that was specified when `p` was started by process_start */
-char* process_get_name(process_info_t *p) {
-  return p->name;
+int thread_terminate(thread_info_t *p)
+{
+  return kill(p->tid, SIGTERM);
 }
 
 
-/* Terminate process `p`. */
-int process_terminate(process_info_t *p) {
-  return kill(p->pid, SIGTERM);
-}
-
-
-/* Return the exit code of process p. */
-/* On error, return -1. */
-int process_reap(process_info_t *p) {
-  if (WIFEXITED(p->status)) {
+/* Return the exit code of process p. On error, return -1. */
+int thread_reap(thread_info_t *p)
+{
+  if (WIFEXITED(p->status))
+  {
     return WEXITSTATUS(p->status);
-  } else  {
+  } 
+  else
+  {
     return p->status; /* ? */
   }
 }
 
 
 /* Clean up after terminating process `p` (e.g. free the output buffer etc.). */
-void process_cleanup(process_info_t *p) {
+void thread_cleanup(thread_info_t *p)
+{
   fclose(p->stdout_file);
   free(p->name);
 }

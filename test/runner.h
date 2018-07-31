@@ -83,12 +83,7 @@ typedef struct {
 
 #define TEST_HELPER       HELPER_ENTRY
 #define BENCHMARK_HELPER  HELPER_ENTRY
-
-#ifdef PATH_MAX
 extern char executable_path[PATH_MAX];
-#else
-extern char executable_path[4096];
-#endif
 
 /*
  * Include platform-dependent definitions
@@ -132,34 +127,33 @@ int platform_init(int argc, char** argv);
 
 /* Invoke "argv[0] test-name [test-part]". Store process info in *p. */
 /* Make sure that all stdio output of the processes is buffered up. */
-int process_start(char *name, char* part, process_info_t *p, int is_helper);
+int thread_start(char *name, char* part, int (*test_routine)(void) ,  thread_info_t *p, int is_helper);
 
 /* Wait for all `n` processes in `vec` to terminate. */
 /* Time out after `timeout` msec, or never if timeout == -1 */
 /* Return 0 if all processes are terminated, -1 on error, -2 on timeout. */
-int process_wait(process_info_t *vec, int n, int timeout);
+int thread_wait(thread_info_t *vec, int n, int timeout);
 
 /* Returns the number of bytes in the stdio output buffer for process `p`. */
-long int process_output_size(process_info_t *p);
+long int thread_output_size(thread_info_t *p);
 
 /* Copy the contents of the stdio output buffer to `stream`. */
-int process_copy_output(process_info_t* p, FILE* stream);
+int thread_copy_output(thread_info_t* p, FILE* stream);
 
 /* Copy the last line of the stdio output buffer to `buffer` */
-int process_read_last_line(process_info_t *p,char * buffer,size_t buffer_len);
+int thread_read_last_line(thread_info_t *p,char * buffer,size_t buffer_len);
 
 /* Return the name that was specified when `p` was started by process_start */
-char* process_get_name(process_info_t *p);
+char* thread_get_name(thread_info_t *p);
 
 /* Terminate process `p`. */
-int process_terminate(process_info_t *p);
+int thread_terminate(thread_info_t *p);
 
-/* Return the exit code of process p. */
-/* On error, return -1. */
-int process_reap(process_info_t *p);
+/* Return the exit code of process p. On error, return -1. */
+int thread_reap(thread_info_t *p);
 
 /* Clean up after terminating process `p` (e.g. free the output buffer etc.). */
-void process_cleanup(process_info_t *p);
+void thread_cleanup(thread_info_t *p);
 
 /* Move the console cursor one line up and back to the first column. */
 void rewind_cursor(void);

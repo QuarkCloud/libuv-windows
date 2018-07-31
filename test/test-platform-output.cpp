@@ -25,7 +25,8 @@
 #include <string.h>
 
 
-TEST_IMPL(platform_output) {
+TEST_IMPL(platform_output)
+{
   char buffer[512];
   size_t rss;
   size_t size;
@@ -70,24 +71,21 @@ TEST_IMPL(platform_output) {
          (unsigned long long) rusage.ru_stime.tv_sec,
          (unsigned long long) rusage.ru_stime.tv_usec);
   printf("  page faults: %llu\n", (unsigned long long) rusage.ru_majflt);
-  printf("  maximum resident set size: %llu\n",
-         (unsigned long long) rusage.ru_maxrss);
+  printf("  maximum resident set size: %llu\n",(unsigned long long) rusage.ru_maxrss);
 
   err = uv_cpu_info(&cpus, &count);
   ASSERT(err == 0);
 
   printf("uv_cpu_info:\n");
-  for (i = 0; i < count; i++) {
+  for (i = 0; i < count; i++)
+  {
     printf("  model: %s\n", cpus[i].model);
     printf("  speed: %d\n", cpus[i].speed);
     printf("  times.sys: %llu\n", (unsigned long long) cpus[i].cpu_times.sys);
-    printf("  times.user: %llu\n",
-           (unsigned long long) cpus[i].cpu_times.user);
-    printf("  times.idle: %llu\n",
-           (unsigned long long) cpus[i].cpu_times.idle);
-    printf("  times.irq: %llu\n",  (unsigned long long) cpus[i].cpu_times.irq);
-    printf("  times.nice: %llu\n",
-           (unsigned long long) cpus[i].cpu_times.nice);
+    printf("  times.user: %llu\n",(unsigned long long) cpus[i].cpu_times.user);
+    printf("  times.idle: %llu\n",(unsigned long long) cpus[i].cpu_times.idle);
+    printf("  times.irq: %llu\n", (unsigned long long) cpus[i].cpu_times.irq);
+    printf("  times.nice: %llu\n",(unsigned long long) cpus[i].cpu_times.nice);
   }
   uv_free_cpu_info(cpus, count);
 
@@ -95,7 +93,8 @@ TEST_IMPL(platform_output) {
   ASSERT(err == 0);
 
   printf("uv_interface_addresses:\n");
-  for (i = 0; i < count; i++) {
+  for (i = 0; i < count; i++)
+  {
     printf("  name: %s\n", interfaces[i].name);
     printf("  internal: %d\n", interfaces[i].is_internal);
     printf("  physical address: ");
@@ -107,21 +106,29 @@ TEST_IMPL(platform_output) {
            (unsigned char)interfaces[i].phys_addr[4],
            (unsigned char)interfaces[i].phys_addr[5]);
 
-    if (interfaces[i].address.address4.sin_family == AF_INET) {
+    if (interfaces[i].address.address4.sin_family == AF_INET)
+    {
       uv_ip4_name(&interfaces[i].address.address4, buffer, sizeof(buffer));
-    } else if (interfaces[i].address.address4.sin_family == AF_INET6) {
+    } 
+    else if (interfaces[i].address.address4.sin_family == AF_INET6)
+    {
       uv_ip6_name(&interfaces[i].address.address6, buffer, sizeof(buffer));
     }
 
     printf("  address: %s\n", buffer);
 
-    if (interfaces[i].netmask.netmask4.sin_family == AF_INET) {
+    if (interfaces[i].netmask.netmask4.sin_family == AF_INET)
+    {
       uv_ip4_name(&interfaces[i].netmask.netmask4, buffer, sizeof(buffer));
       printf("  netmask: %s\n", buffer);
-    } else if (interfaces[i].netmask.netmask4.sin_family == AF_INET6) {
+    } 
+    else if (interfaces[i].netmask.netmask4.sin_family == AF_INET6)
+    {
       uv_ip6_name(&interfaces[i].netmask.netmask6, buffer, sizeof(buffer));
       printf("  netmask: %s\n", buffer);
-    } else {
+    } 
+    else
+    {
       printf("  netmask: none\n");
     }
   }

@@ -78,10 +78,10 @@ int run_tests(int benchmark_output)
 
   /* Count the number of tests. */
   total = 0;
-  for (task = TASKS; task->main; task++) {
-    if (!task->is_helper) {
+  for (task = TASKS; task->main; task++)
+  {
+    if (!task->is_helper)
       total++;
-    }
   }
 
   fprintf(stderr, "1..%d\n", total);
@@ -92,10 +92,10 @@ int run_tests(int benchmark_output)
   failed = 0;
   skipped = 0;
   current = 1;
-  for (task = TASKS; task->main; task++) {
-    if (task->is_helper) {
+  for (task = TASKS; task->main; task++)
+  {
+    if (task->is_helper)
       continue;
-    }
 
     test_result = run_test(task->task_name, benchmark_output, current);
     switch (test_result)
@@ -111,10 +111,8 @@ int run_tests(int benchmark_output)
 }
 
 
-void log_tap_result(int test_count,
-                    const char* test,
-                    int status,
-                    process_info_t* process) {
+void log_tap_result(int test_count,const char* test,int status,thread_info_t* process)
+{
   const char* result;
   const char* directive;
   char reason[1024];
@@ -133,8 +131,8 @@ void log_tap_result(int test_count,
     directive = "";
   }
 
-  if (status == TEST_SKIP && process_output_size(process) > 0) {
-    process_read_last_line(process, reason, sizeof reason);
+  if (status == TEST_SKIP && thread_output_size(process) > 0) {
+    thread_read_last_line(process, reason, sizeof reason);
   } else {
     reason[0] = '\0';
   }
@@ -147,14 +145,15 @@ void log_tap_result(int test_count,
 int run_test(const char* test, int benchmark_output, int test_count)
 {
   char errmsg[1024] = "";
-  process_info_t processes[1024];
-  process_info_t *main_proc;
+  thread_info_t processes[1024];
+  thread_info_t *main_proc;
   task_entry_t* task;
   int process_count;
   int result;
   int status;
   int i;
 
+  ::memset(processes , 0 , sizeof(processes)) ;
   status = 255;
   main_proc = NULL;
   process_count = 0;
@@ -165,10 +164,10 @@ int run_test(const char* test, int benchmark_output, int test_count)
   remove(TEST_PIPENAME_3);
 
   /* If it's a helper the user asks for, start it directly. */
-  for (task = TASKS; task->main; task++) {
-    if (task->is_helper && strcmp(test, task->process_name) == 0) {
+  for (task = TASKS; task->main; task++)
+  {
+    if (task->is_helper && strcmp(test, task->process_name) == 0)
       return task->main();
-    }
   }
 
   /* Start the helpers first. */
@@ -181,7 +180,7 @@ int run_test(const char* test, int benchmark_output, int test_count)
     if (!task->is_helper)
       continue;
 
-    if (process_start(task->task_name, task->process_name, &processes[process_count],1 /* is_helper */) == -1)
+    if (thread_start(task->task_name, task->process_name, task->main , &processes[process_count],1 /* is_helper */) == -1)
     {
       snprintf(errmsg, sizeof errmsg, "Process `%s` failed to start.", task->process_name);
       goto out;
@@ -202,7 +201,7 @@ int run_test(const char* test, int benchmark_output, int test_count)
     if (task->is_helper)
       continue;
 
-    if (process_start(task->task_name, task->process_name,&processes[process_count], 0 /* !is_helper */) == -1)
+    if(thread_start(task->task_name, task->process_name, task->main ,&processes[process_count], 0 /* !is_helper */) == -1)
     {
       snprintf(errmsg,sizeof errmsg,"Process `%s` failed to start.",task->process_name);
       goto out;
@@ -219,7 +218,7 @@ int run_test(const char* test, int benchmark_output, int test_count)
     goto out;
   }
 
-  result = process_wait(main_proc, 1, task->timeout);
+  result = thread_wait(main_proc, 1, task->timeout);
   if (result == -1)
   {
     FATAL("process_wait failed");
@@ -231,7 +230,7 @@ int run_test(const char* test, int benchmark_output, int test_count)
     goto out;
   }
 
-  status = process_reap(main_proc);
+  status = thread_reap(main_proc);
   if (status != TEST_OK)
   {
     snprintf(errmsg,sizeof errmsg,"exit code %d",status);
@@ -248,10 +247,10 @@ out:
   /* Reap running processes except the main process, it's already dead. */
   for (i = 0; i < process_count - 1; i++)
   {
-    process_terminate(&processes[i]);
+    thread_terminate(&processes[i]);
   }
 
-  if (process_count > 0 &&process_wait(processes, process_count - 1, -1) < 0)
+  if (process_count > 0 &&thread_wait(processes, process_count - 1, -1) < 0)
   {
     FATAL("process_wait failed");
   }
@@ -266,30 +265,28 @@ out:
     fflush(stderr);
 
     for (i = 0; i < process_count; i++) {
-      switch (process_output_size(&processes[i])) {
+      switch (thread_output_size(&processes[i])) {
        case -1:
-        fprintf(stderr, "Output from process `%s`: (unavailable)\n",
-                process_get_name(&processes[i]));
+        fprintf(stderr, "Output from process `%s`: (unavailable)\n",thread_get_name(&processes[i]));
         fflush(stderr);
         break;
 
        case 0:
-        fprintf(stderr, "Output from process `%s`: (no output)\n",
-                process_get_name(&processes[i]));
+        fprintf(stderr, "Output from process `%s`: (no output)\n",thread_get_name(&processes[i]));
         fflush(stderr);
         break;
 
        default:
-        fprintf(stderr, "Output from process `%s`:\n", process_get_name(&processes[i]));
+        fprintf(stderr, "Output from process `%s`:\n", thread_get_name(&processes[i]));
         fflush(stderr);
-        process_copy_output(&processes[i], stderr);
+        thread_copy_output(&processes[i], stderr);
         break;
       }
     }
 
   /* In benchmark mode show concise output from the main process. */
   } else if (benchmark_output) {
-    switch (process_output_size(main_proc)) {
+    switch (thread_output_size(main_proc)) {
      case -1:
       fprintf(stderr, "%s: (unavailable)\n", test);
       fflush(stderr);
@@ -302,7 +299,7 @@ out:
 
      default:
       for (i = 0; i < process_count; i++) {
-        process_copy_output(&processes[i], stderr);
+        thread_copy_output(&processes[i], stderr);
       }
       break;
     }
@@ -310,7 +307,7 @@ out:
 
   /* Clean up all process handles. */
   for (i = 0; i < process_count; i++) {
-    process_cleanup(&processes[i]);
+    thread_cleanup(&processes[i]);
   }
 
   return status;
@@ -345,8 +342,7 @@ static int compare_task(const void* va, const void* vb) {
 }
 
 
-static int find_helpers(const task_entry_t* task,
-                        const task_entry_t** helpers) {
+static int find_helpers(const task_entry_t* task,const task_entry_t** helpers) {
   const task_entry_t* helper;
   int n_helpers;
 
