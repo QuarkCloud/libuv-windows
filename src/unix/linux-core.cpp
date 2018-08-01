@@ -493,8 +493,8 @@ uint64_t uv_get_total_memory(void) {
   return 0;
 }
 
-
-int uv_resident_set_memory(size_t* rss) {
+int uv_resident_set_memory(size_t* rss)
+{
   char buf[1024];
   const char* s;
   ssize_t n;
@@ -549,6 +549,7 @@ int uv_resident_set_memory(size_t* rss) {
 err:
   return -EINVAL;
 }
+
 
 
 int uv_uptime(double* uptime) {
