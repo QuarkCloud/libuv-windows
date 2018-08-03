@@ -19,11 +19,6 @@
 #include "internal.h"  
 #include <atomic.h>
 
-#if defined(__SUNPRO_C) || defined(__SUNPRO_CC)
-#include <atomic.h>
-#define __sync_val_compare_and_swap(p, o, n) atomic_cas_ptr(p, o, n)
-#endif
-
 static int cmpxchgi(int* ptr, int oldval, int newval);
 static long cmpxchgl(long* ptr, long oldval, long newval);
 static void cpu_relax(void);

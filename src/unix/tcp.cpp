@@ -307,7 +307,7 @@ int uv__tcp_keepalive(int fd, int on, unsigned int delay) {
    * then don't advertise it in your system headers...
    */
   /* FIXME(bnoordhuis) That's possibly because sizeof(delay) should be 1. */
-#if defined(TCP_KEEPALIVE) && !defined(__sun)
+#if defined(TCP_KEEPALIVE)
   if (on && setsockopt(fd, IPPROTO_TCP, TCP_KEEPALIVE, &delay, sizeof(delay)))
     return -errno;
 #endif

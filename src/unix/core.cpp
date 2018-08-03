@@ -804,7 +804,6 @@ void uv__io_start(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
   w->pevents |= events;
   maybe_resize(loop, w->fd + 1);
 
-#if !defined(__sun)
   /* The event ports backend needs to rearm all file descriptors on each and
    * every tick of the event loop but the other backends allow us to
    * short-circuit here if the event mask is unchanged.
@@ -816,7 +815,6 @@ void uv__io_start(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
     }
     return;
   }
-#endif
 
   if (QUEUE_EMPTY(&w->watcher_queue))
     QUEUE_INSERT_TAIL(&loop->watcher_queue, &w->watcher_queue);
