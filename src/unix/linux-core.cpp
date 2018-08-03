@@ -577,8 +577,11 @@ int uv_uptime(double* uptime) {
 }
 
 
-static int uv__cpu_num(FILE* statfile_fp, unsigned int* numcpus) {
+//static int uv__cpu_num(FILE* statfile_fp, unsigned int* numcpus) {
+static int uv__cpu_num(int fd, unsigned int* numcpus)
+{
   unsigned int num;
+  /**
   char buf[1024];
 
   if (!fgets(buf, sizeof(buf), statfile_fp))
@@ -590,6 +593,10 @@ static int uv__cpu_num(FILE* statfile_fp, unsigned int* numcpus) {
       break;
     num++;
   }
+  */
+  char buf[8192] ;
+  int rsize = ::read(fd , buf , sizeof(buf)) ;
+
 
   if (num == 0)
     return -EIO;
@@ -598,21 +605,26 @@ static int uv__cpu_num(FILE* statfile_fp, unsigned int* numcpus) {
   return 0;
 }
 
-
+/**
+    cpu_info使用fopen而不是open打开proc文件，qkc暂时还不支持，所以修改代码
+*/
 int uv_cpu_info(uv_cpu_info_t** cpu_infos, int* count) {
   unsigned int numcpus;
   uv_cpu_info_t* ci;
   int err;
-  FILE* statfile_fp;
+  //FILE* statfile_fp;
+  int fd = 0 ;
 
   *cpu_infos = NULL;
   *count = 0;
 
-  statfile_fp = uv__open_file("/proc/stat");
-  if (statfile_fp == NULL)
+  //statfile_fp = uv__open_file("/proc/stat");
+  fd = open("/proc/stat") ;
+  //if (statfile_fp == NULL)
+  if(fd == -1)
     return -errno;
 
-  err = uv__cpu_num(statfile_fp, &numcpus);
+  err = uv__cpu_num(fd, &numcpus);
   if (err < 0)
     goto out;
 
