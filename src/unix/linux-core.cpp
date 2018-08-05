@@ -65,9 +65,8 @@
 #endif
 
 static int read_models(unsigned int numcpus, uv_cpu_info_t* ci);
-static int read_times(FILE* statfile_fp,
-                      unsigned int numcpus,
-                      uv_cpu_info_t* ci);
+//static int read_times(FILE* statfile_fp, unsigned int numcpus, uv_cpu_info_t* ci);
+static int read_times(int fd, unsigned int numcpus, uv_cpu_info_t* ci);
 static void read_speeds(unsigned int numcpus, uv_cpu_info_t* ci);
 static unsigned long read_cpufreq(unsigned int cpunum);
 
@@ -619,7 +618,7 @@ int uv_cpu_info(uv_cpu_info_t** cpu_infos, int* count) {
   *count = 0;
 
   //statfile_fp = uv__open_file("/proc/stat");
-  fd = open("/proc/stat") ;
+  fd = open("/proc/stat" , O_RDONLY) ;
   //if (statfile_fp == NULL)
   if(fd == -1)
     return -errno;
@@ -635,7 +634,7 @@ int uv_cpu_info(uv_cpu_info_t** cpu_infos, int* count) {
 
   err = read_models(numcpus, ci);
   if (err == 0)
-    err = read_times(statfile_fp, numcpus, ci);
+    err = read_times(fd, numcpus, ci);
 
   if (err) {
     uv_free_cpu_info(ci, numcpus);
@@ -654,7 +653,7 @@ int uv_cpu_info(uv_cpu_info_t** cpu_infos, int* count) {
 
 out:
 
-  if (fclose(statfile_fp))
+  if (::close(fd))
     if (errno != EINTR && errno != EINPROGRESS)
       abort();
 
@@ -744,9 +743,8 @@ static int read_models(unsigned int numcpus, uv_cpu_info_t* ci) {
 }
 
 
-static int read_times(FILE* statfile_fp,
-                      unsigned int numcpus,
-                      uv_cpu_info_t* ci) {
+static int read_times(int fd,unsigned int numcpus,uv_cpu_info_t* ci)
+{
   unsigned long clock_ticks;
   struct uv_cpu_times_s ts;
   unsigned long user;
@@ -763,7 +761,8 @@ static int read_times(FILE* statfile_fp,
   assert(clock_ticks != (unsigned long) -1);
   assert(clock_ticks != 0);
 
-  rewind(statfile_fp);
+  //rewind(statfile_fp);
+  ::lseek64(fd , 0 , SEEK_SET) ;
 
   if (!fgets(buf, sizeof(buf), statfile_fp))
     abort();
