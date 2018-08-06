@@ -575,11 +575,32 @@ int uv_uptime(double* uptime) {
   return 0;
 }
 
+/**
+    2018-08-06
+    proc文件系统不支持FILE流式读取，所以暂时需要修改fgets为lgets。
+    参见fseek和lseek。
+*/
+int get_line(char * buf , int size)
+{
+    int offset = 0 ;
+    while(offset < size)
+    {
+        if(buf[offset] == '\n')
+        {
+            buf[offset++] = '\0' ;
+            return offset ;
+        }
+        ++offset ;
+    }
+
+    return offset ;
+}
+
 
 //static int uv__cpu_num(FILE* statfile_fp, unsigned int* numcpus) {
 static int uv__cpu_num(int fd, unsigned int* numcpus)
 {
-  unsigned int num;
+  unsigned int num = 0;
   /**
   char buf[1024];
 
@@ -593,9 +614,20 @@ static int uv__cpu_num(int fd, unsigned int* numcpus)
     num++;
   }
   */
-  char buf[8192] ;
-  int rsize = ::read(fd , buf , sizeof(buf)) ;
+  char buf[4096] ;
+  int size = ::read(fd , buf , sizeof(buf)) ;
 
+  int line_size = 0 , offset = 0 ;
+  if((line_size = get_line(buf , size)) <= 0)
+      return -EIO ;
+
+  while((line_size = get_line(buf + offset , size - offset)) > 0)
+  {
+    if(strncmp(buf + offset  ,  "cpu" , 3) != 0)
+        break ;
+    ++num ;
+    offset += line_size ;
+  }
 
   if (num == 0)
     return -EIO;
@@ -611,15 +643,12 @@ int uv_cpu_info(uv_cpu_info_t** cpu_infos, int* count) {
   unsigned int numcpus;
   uv_cpu_info_t* ci;
   int err;
-  //FILE* statfile_fp;
   int fd = 0 ;
 
   *cpu_infos = NULL;
   *count = 0;
 
-  //statfile_fp = uv__open_file("/proc/stat");
   fd = open("/proc/stat" , O_RDONLY) ;
-  //if (statfile_fp == NULL)
   if(fd == -1)
     return -errno;
 
@@ -674,15 +703,16 @@ static void read_speeds(unsigned int numcpus, uv_cpu_info_t* ci) {
  *
  * Note: Simply returns on error, uv_cpu_info() takes care of the cleanup.
  */
-static int read_models(unsigned int numcpus, uv_cpu_info_t* ci) {
+static int read_models(unsigned int numcpus, uv_cpu_info_t* ci)
+{
   static const char model_marker[] = "model name\t: ";
   static const char speed_marker[] = "cpu MHz\t\t: ";
   const char* inferred_model;
   unsigned int model_idx;
   unsigned int speed_idx;
-  char buf[1024];
+  char buf[4096];
   char* model;
-  FILE* fp;
+  //FILE* fp;
 
   /* Most are unused on non-ARM, non-MIPS and non-x86 architectures. */
   (void) &model_marker;
@@ -690,23 +720,32 @@ static int read_models(unsigned int numcpus, uv_cpu_info_t* ci) {
   (void) &speed_idx;
   (void) &model;
   (void) &buf;
-  (void) &fp;
+  //(void) &fp;
 
   model_idx = 0;
   speed_idx = 0;
 
-#if defined(__i386__) || defined(__x86_64__)
-  fp = uv__open_file("/proc/cpuinfo");
-  if (fp == NULL)
-    return -errno;
+  int fd = open("/proc/cpuinfo" , O_RDONLY);
+  if(fd < 0)
+      return -errno ;
+  int size = read(fd , buf , sizeof(buf)) ;
+  close(fd) ;
 
-  while (fgets(buf, sizeof(buf), fp)) {
+  if(size <= 0)
+      return -1 ;
+
+
+  int line_size = 0 , offset = 0 ;
+  //while (fgets(buf, sizeof(buf), fp)) {
+  while((line_size = get_line(buf + offset , size - offset)) > 0)
+  {
     if (model_idx < numcpus) {
       if (strncmp(buf, model_marker, sizeof(model_marker) - 1) == 0) {
         model = buf + sizeof(model_marker) - 1;
         model = uv__strndup(model, strlen(model) - 1);  /* Strip newline. */
-        if (model == NULL) {
-          fclose(fp);
+        if (model == NULL)
+        {
+          //fclose(fp);
           return -ENOMEM;
         }
         ci[model_idx++].model = model;
@@ -721,8 +760,8 @@ static int read_models(unsigned int numcpus, uv_cpu_info_t* ci) {
     }
   }
 
-  fclose(fp);
-#endif  /*__i386__ || __x86_64__ */
+  //fclose(fp);
+
 
   /* Now we want to make sure that all the models contain *something* because
    * it's not safe to leave them as null. Copy the last entry unless there
@@ -742,7 +781,6 @@ static int read_models(unsigned int numcpus, uv_cpu_info_t* ci) {
   return 0;
 }
 
-
 static int read_times(int fd,unsigned int numcpus,uv_cpu_info_t* ci)
 {
   unsigned long clock_ticks;
@@ -755,7 +793,7 @@ static int read_times(int fd,unsigned int numcpus,uv_cpu_info_t* ci)
   unsigned long irq;
   unsigned int num;
   unsigned int len;
-  char buf[1024];
+  char buf[4096];
 
   clock_ticks = sysconf(_SC_CLK_TCK);
   assert(clock_ticks != (unsigned long) -1);
@@ -764,22 +802,30 @@ static int read_times(int fd,unsigned int numcpus,uv_cpu_info_t* ci)
   //rewind(statfile_fp);
   ::lseek64(fd , 0 , SEEK_SET) ;
 
-  if (!fgets(buf, sizeof(buf), statfile_fp))
-    abort();
+  int bufsize = ::read(fd , buf , sizeof(buf)) ;
+  if(bufsize <= 0)
+      abort() ;
+
+  //if (!fgets(buf, sizeof(buf), statfile_fp))
+  //  abort();
 
   num = 0;
 
-  while (fgets(buf, sizeof(buf), statfile_fp)) {
+  //while (fgets(buf, sizeof(buf), statfile_fp)) {
+  int line_size = 0 , offset = 0;
+  while((line_size = get_line(buf + offset, bufsize - offset)) > 0)
+  {
     if (num >= numcpus)
       break;
 
-    if (strncmp(buf, "cpu", 3))
+    if (strncmp(buf + offset, "cpu", 3))
       break;
+
 
     /* skip "cpu<num> " marker */
     {
       unsigned int n;
-      int r = sscanf(buf, "cpu%u ", &n);
+      int r = sscanf(buf + offset, "cpu%u ", &n);
       assert(r == 1);
       (void) r;  /* silence build warning */
       for (len = sizeof("cpu0"); n /= 10; len++);
@@ -791,7 +837,7 @@ static int read_times(int fd,unsigned int numcpus,uv_cpu_info_t* ci)
      * Don't use %*s to skip fields or %ll to read straight into the uint64_t
      * fields, they're not allowed in C89 mode.
      */
-    if (6 != sscanf(buf + len,
+    if (6 != sscanf(buf + len + offset,
                     "%lu %lu %lu %lu %lu %lu",
                     &user,
                     &nice,
@@ -807,6 +853,8 @@ static int read_times(int fd,unsigned int numcpus,uv_cpu_info_t* ci)
     ts.idle = clock_ticks * idle;
     ts.irq  = clock_ticks * irq;
     ci[num++].cpu_times = ts;
+
+    offset += line_size ;
   }
   assert(num == numcpus);
 
@@ -814,7 +862,13 @@ static int read_times(int fd,unsigned int numcpus,uv_cpu_info_t* ci)
 }
 
 
-static unsigned long read_cpufreq(unsigned int cpunum) {
+static unsigned long read_cpufreq(unsigned int cpunum)
+{
+  return 0 ;
+  /**
+    2018-08-06
+    暂时不实现
+  */
   unsigned long val;
   char buf[1024];
   FILE* fp;
