@@ -739,9 +739,11 @@ static int read_models(unsigned int numcpus, uv_cpu_info_t* ci)
   //while (fgets(buf, sizeof(buf), fp)) {
   while((line_size = get_line(buf + offset , size - offset)) > 0)
   {
+    char * str = buf + offset ;
+    offset += line_size ;
     if (model_idx < numcpus) {
-      if (strncmp(buf, model_marker, sizeof(model_marker) - 1) == 0) {
-        model = buf + sizeof(model_marker) - 1;
+      if (strncmp(str, model_marker, sizeof(model_marker) - 1) == 0) {
+        model = str + sizeof(model_marker) - 1;
         model = uv__strndup(model, strlen(model) - 1);  /* Strip newline. */
         if (model == NULL)
         {
@@ -753,8 +755,8 @@ static int read_models(unsigned int numcpus, uv_cpu_info_t* ci)
       }
     }
     if (speed_idx < numcpus) {
-      if (strncmp(buf, speed_marker, sizeof(speed_marker) - 1) == 0) {
-        ci[speed_idx++].speed = atoi(buf + sizeof(speed_marker) - 1);
+      if (strncmp(str, speed_marker, sizeof(speed_marker) - 1) == 0) {
+        ci[speed_idx++].speed = atoi(str + sizeof(speed_marker) - 1);
         continue;
       }
     }
@@ -800,7 +802,6 @@ static int read_times(int fd,unsigned int numcpus,uv_cpu_info_t* ci)
   assert(clock_ticks != 0);
 
   //rewind(statfile_fp);
-  ::lseek64(fd , 0 , SEEK_SET) ;
 
   int bufsize = ::read(fd , buf , sizeof(buf)) ;
   if(bufsize <= 0)
@@ -902,11 +903,8 @@ void uv_free_cpu_info(uv_cpu_info_t* cpu_infos, int count) {
 }
 
 
-int uv_interface_addresses(uv_interface_address_t** addresses,
-  int* count) {
-#ifndef HAVE_IFADDRS_H
-  return -ENOSYS;
-#else
+int uv_interface_addresses(uv_interface_address_t** addresses,int* count)
+{
   struct ifaddrs *addrs, *ent;
   uv_interface_address_t* address;
   int i;
