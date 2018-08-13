@@ -993,7 +993,6 @@ int uv_interface_addresses(uv_interface_address_t** addresses,int* count)
   freeifaddrs(addrs);
 
   return 0;
-#endif
 }
 
 
