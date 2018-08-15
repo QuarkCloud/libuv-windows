@@ -5,9 +5,9 @@
 #include "uv.h"
 
 TEST_DECLARE   (platform_output)
-/**
-TEST_DECLARE   (callback_order)
+//TEST_DECLARE   (callback_order)
 TEST_DECLARE   (close_order)
+/**
 TEST_DECLARE   (run_once)
 TEST_DECLARE   (run_nowait)
 TEST_DECLARE   (loop_alive)
@@ -331,8 +331,8 @@ TEST_DECLARE   (queue_foreach_delete)
 TASK_LIST_START
 
   TEST_ENTRY_CUSTOM (platform_output, 0, 1, 5000)
-/**
   TEST_ENTRY  (close_order)
+/**
   TEST_ENTRY  (run_once)
   TEST_ENTRY  (run_nowait)
   TEST_ENTRY  (loop_alive)
