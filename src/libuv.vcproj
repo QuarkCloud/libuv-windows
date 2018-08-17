@@ -233,7 +233,15 @@
 					>
 				</File>
 				<File
-					RelativePath=".\unix\loop-watcher.cpp"
+					RelativePath=".\unix\loop-watcher_check.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\unix\loop-watcher_idle.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\unix\loop-watcher_prepare.cpp"
 					>
 				</File>
 				<File
