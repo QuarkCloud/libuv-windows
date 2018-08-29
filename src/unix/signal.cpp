@@ -44,8 +44,7 @@ static void uv__signal_stop(uv_signal_t* handle);
 
 
 static uv_once_t uv__signal_global_init_guard = UV_ONCE_INIT;
-static struct uv__signal_tree_s uv__signal_tree =
-    RB_INITIALIZER(uv__signal_tree);
+static struct uv__signal_tree_s uv__signal_tree = RB_INITIALIZER(uv__signal_tree);
 static int uv__signal_lock_pipefd[2];
 
 
