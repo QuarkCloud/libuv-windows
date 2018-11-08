@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{E37EFFFA-BEE6-4DBA-9DA9-F8703E3C0002}</ProjectGuid>
+    <RootNamespace>libuv</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>15.0.27130.2020</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)win32\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+    <TargetName>$(ProjectName)d</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)win32\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(SolutionDir)include;$(QUARK_ROOT)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;LIBUV_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <PrecompiledHeaderFile />
+      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt) </OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalDependencies>qkcd.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OutDir)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;LIBUV_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>$(SolutionDir)include;$(QUARK_ROOT)include;</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile />
+      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalDependencies>qkc.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OutDir)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="fs-poll.cpp" />
+    <ClCompile Include="inet.cpp" />
+    <ClCompile Include="threadpool.cpp" />
+    <ClCompile Include="unix\async.cpp" />
+    <ClCompile Include="unix\core.cpp" />
+    <ClCompile Include="unix\dl.cpp" />
+    <ClCompile Include="unix\fs.cpp" />
+    <ClCompile Include="unix\getaddrinfo.cpp" />
+    <ClCompile Include="unix\getnameinfo.cpp" />
+    <ClCompile Include="unix\linux-core.cpp" />
+    <ClCompile Include="unix\linux-inotify.cpp" />
+    <ClCompile Include="unix\linux-syscalls.cpp" />
+    <ClCompile Include="unix\loop-watcher_check.cpp" />
+    <ClCompile Include="unix\loop-watcher_idle.cpp" />
+    <ClCompile Include="unix\loop-watcher_prepare.cpp" />
+    <ClCompile Include="unix\loop.cpp" />
+    <ClCompile Include="unix\pipe.cpp" />
+    <ClCompile Include="unix\poll.cpp" />
+    <ClCompile Include="unix\process.cpp" />
+    <ClCompile Include="unix\proctitle.cpp" />
+    <ClCompile Include="unix\pthread-barrier.cpp" />
+    <ClCompile Include="unix\pthread-fixes.cpp" />
+    <ClCompile Include="unix\signal.cpp" />
+    <ClCompile Include="unix\stream.cpp" />
+    <ClCompile Include="unix\tcp.cpp" />
+    <ClCompile Include="unix\thread.cpp" />
+    <ClCompile Include="unix\timer.cpp" />
+    <ClCompile Include="unix\tty.cpp" />
+    <ClCompile Include="unix\udp.cpp" />
+    <ClCompile Include="uv-common.cpp" />
+    <ClCompile Include="version.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\pthread-barrier.h" />
+    <ClInclude Include="..\include\tree.h" />
+    <ClInclude Include="..\include\uv-errno.h" />
+    <ClInclude Include="..\include\uv-linux.h" />
+    <ClInclude Include="..\include\uv-threadpool.h" />
+    <ClInclude Include="..\include\uv-unix.h" />
+    <ClInclude Include="..\include\uv-version.h" />
+    <ClInclude Include="..\include\uv.h" />
+    <ClInclude Include="heap-inl.h" />
+    <ClInclude Include="queue.h" />
+    <ClInclude Include="unix\atomic-ops.h" />
+    <ClInclude Include="unix\internal.h" />
+    <ClInclude Include="unix\linux-syscalls.h" />
+    <ClInclude Include="unix\spinlock.h" />
+    <ClInclude Include="uv-common.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

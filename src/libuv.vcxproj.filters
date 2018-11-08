@@ -1,0 +1,165 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="源文件\unix">
+      <UniqueIdentifier>{f2a0ecf9-d7de-4574-bc99-3134e16b772e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="头文件\unix">
+      <UniqueIdentifier>{d4b5e27f-08d4-45b3-a49f-4d78a206d9a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="fs-poll.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="inet.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="threadpool.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="uv-common.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="version.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="unix\async.cpp">
+      <Filter>源文件\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="unix\core.cpp">
+      <Filter>源文件\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="unix\dl.cpp">
+      <Filter>源文件\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="unix\fs.cpp">
+      <Filter>源文件\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="unix\getaddrinfo.cpp">
+      <Filter>源文件\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="unix\getnameinfo.cpp">
+      <Filter>源文件\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="unix\linux-core.cpp">
+      <Filter>源文件\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="unix\linux-inotify.cpp">
+      <Filter>源文件\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="unix\linux-syscalls.cpp">
+      <Filter>源文件\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="unix\loop-watcher_check.cpp">
+      <Filter>源文件\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="unix\loop-watcher_idle.cpp">
+      <Filter>源文件\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="unix\loop-watcher_prepare.cpp">
+      <Filter>源文件\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="unix\loop.cpp">
+      <Filter>源文件\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="unix\pipe.cpp">
+      <Filter>源文件\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="unix\poll.cpp">
+      <Filter>源文件\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="unix\process.cpp">
+      <Filter>源文件\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="unix\proctitle.cpp">
+      <Filter>源文件\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="unix\pthread-barrier.cpp">
+      <Filter>源文件\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="unix\pthread-fixes.cpp">
+      <Filter>源文件\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="unix\signal.cpp">
+      <Filter>源文件\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="unix\stream.cpp">
+      <Filter>源文件\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="unix\tcp.cpp">
+      <Filter>源文件\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="unix\thread.cpp">
+      <Filter>源文件\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="unix\timer.cpp">
+      <Filter>源文件\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="unix\tty.cpp">
+      <Filter>源文件\unix</Filter>
+    </ClCompile>
+    <ClCompile Include="unix\udp.cpp">
+      <Filter>源文件\unix</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="heap-inl.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pthread-barrier.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="queue.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\tree.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="uv-common.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\uv-errno.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\uv-linux.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\uv-threadpool.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\uv-unix.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\uv-version.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\uv.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="unix\atomic-ops.h">
+      <Filter>头文件\unix</Filter>
+    </ClInclude>
+    <ClInclude Include="unix\internal.h">
+      <Filter>头文件\unix</Filter>
+    </ClInclude>
+    <ClInclude Include="unix\linux-syscalls.h">
+      <Filter>头文件\unix</Filter>
+    </ClInclude>
+    <ClInclude Include="unix\spinlock.h">
+      <Filter>头文件\unix</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
