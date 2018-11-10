@@ -9,6 +9,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libuv", "src\libuv.vcxproj"
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "test\test.vcxproj", "{0E2CFAAC-F501-410C-AB21-659B786A741F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A08041CF-81D7-4A5C-A1D1-216FA37D2D46} = {A08041CF-81D7-4A5C-A1D1-216FA37D2D46}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "qkc", "..\quark\qkc\qkc.vcxproj", "{A08041CF-81D7-4A5C-A1D1-216FA37D2D46}"
 EndProject
